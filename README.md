@@ -11,6 +11,16 @@ Download the [latest release](https://gitlab.com/mrsheepsheep/EDMC-Inara/reposit
 
 You will need to re-start EDMC for it to notice the plugin.
 
+## Dependencies
+
+This plugin is dependent on the Python Module Pillow. Pillow will only work with the 32 bit version of Python. If you have a problem, you may need to uninstall Pillow reinstall python and then install Pillow
+
+You can install Pillow with the pip command
+
+pip install Pillow.
+
+
+
 # Elite Dangerous Screenshot event format
 
 
