@@ -3,7 +3,7 @@ A plugin for EDMC that detects screenshot events are converts them to PNG format
 
 
 # Installation
-Download the [latest release](https://gitlab.com/mrsheepsheep/EDMC-Inara/repository/archive.zip?ref=master), open the archive (zip) and extract the folder (yup, the weird folder name, feel free to rename) to your EDMC plugin folder.
+Download the [latest release](https://gitlab.com/NoFoolLikeOne/EDMC-Screenshot/repository/archive.zip?ref=master), open the archive (zip) and extract the folder (yup, the weird folder name, feel free to rename) to your EDMC plugin folder.
 
 * Windows: `%LOCALAPPDATA%\EDMarketConnector\plugins` (usually `C:\Users\you\AppData\Local\EDMarketConnector\plugins`).
 * Mac: `~/Library/Application Support/EDMarketConnector/plugins` (in Finder hold ⌥ and choose Go &rarr; Library to open your `~/Library` folder).
