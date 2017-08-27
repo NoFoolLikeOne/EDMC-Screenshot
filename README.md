@@ -11,19 +11,21 @@ Download the [latest release](https://gitlab.com/mrsheepsheep/EDMC-Inara/reposit
 
 You will need to re-start EDMC for it to notice the plugin.
 
-## Dependencies
+## Configuration
+Go to file/settings and put in: 
+* the directory where the screenshots are stored in game
+* the directory where you want the converted screenshots to go
+* Choose whether to delete the original file
 
-This plugin is dependent on the Python Module Pillow. Pillow will only work with the 32 bit version of Python. If you have a problem, you may need to uninstall Pillow reinstall python and then install Pillow
-
-You can install Pillow with the pip command
-
-pip install Pillow.
-
+# To Do
+* Add defensive code in case the directories do not exist or are otherwise invalid
+* Add option to have a high and low res version when the game saves hi resolution
+* Add an options to save a small version for easier up load 800x600 or the like 
 
 
 # Elite Dangerous Screenshot event format
 
-
+``` Event format
 {
   "timestamp": "2017-08-26T03:12:19Z",
   "event": "Screenshot",
@@ -33,3 +35,4 @@ pip install Pillow.
   "System": "Ceos",
   "Body": "New Dawn Station"
 }
+```
