@@ -1,6 +1,9 @@
 # EDMC-Screenshot
 A plugin for EDMC that detects screenshot events are converts them to PNG format
 
+The plugin takes the existing screenshot file and generate a new name based on the mask System(Body)_nnn.png
+The converted file can be saved to a different directory from the orginal file. The original file can optionally be deleted. 
+
 
 # Installation
 Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.0.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
