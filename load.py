@@ -5,6 +5,7 @@ import ttk
 import Tkinter as tk
 import requests
 import os
+import glob
 
 from PIL import Image
 
@@ -28,9 +29,6 @@ def plugin_start():
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
 	
 	print "Screenshot loaded!"
-	print this.bmp_loc
-	print this.png_loc
-	print this.delete_org
 	return "Screenshot"
 
 	
@@ -71,20 +69,33 @@ def prefs_changed():
 	config.set("PNG", this.png_loc.get())
 	config.set("DelOrg", this.delete_org.get())
 	this.status['text'] = "Prefs changed"
-	# config.setint('BMP', this.bmp_loc.get())	# Store new value in config
+	
+
+	
+#get the file sequence number from destination	
+def get_sq(entry):
+	system = entry['System']
+	body = entry['Body']
+	dir = tk.StringVar(value=config.get("PNG")).get()
+	mask = dir+'/'+system+'('+body+')_*.png'
+	files = glob.glob(mask)
+	n = [int(re.sub(r"\D", "", elem)) for elem in files]
+	sequence = int(max(n))+1
+	return format(sequence, "05d")
+	
 
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
 
     if entry['event'] == 'Screenshot':
 		this.status['text'] = 'processing...'	
-		## get the numeric component from the filename
-		p = re.compile('\d+')
-		seq = p.search(entry['Filename']).group()
+		## get the numeric component from the filename	
+		seq = get_sq(entry)
 			
 		## get the filename
 		f = re.compile('Screenshot_\d+.bmp')
 		bmpfile=f.search(entry['Filename']).group();
+		
 		
 		## Construct the new filename		
 		pngfile=entry['System']+"("+entry['Body']+")_"+seq+".png"
