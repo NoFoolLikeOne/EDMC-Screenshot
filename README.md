@@ -39,3 +39,6 @@ Go to file/settings and put in:
   "Body": "New Dawn Station"
 }
 ```
+# Changelog
+
+* Fixed an issue where files were being overwritten when the original was deleted
