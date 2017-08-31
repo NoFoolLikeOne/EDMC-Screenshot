@@ -80,15 +80,23 @@ def get_sq(entry):
 	mask = dir+'/'+system+'('+body+')_*.png'
 	print mask
 	files = glob.glob(mask)
-	print files
 	
-	n = [int(re.sub(r"\D", "", elem)) for elem in files]
-		
+	
+	n = []
+	for elem in files:
+		try:
+			n.append(int(elem[-9:-4]))
+		except:
+			print elem
+	#x = [int(re.sub(r"\D", "", elem)) for elem in files]
+	#n = [int(format(elem,"05d")[-9:-4]) for elem in x]
+	
+	
 	if not n:
 		n = [0]
-	
-		
+			
 	print n
+	print max(n)
 	sequence = int(max(n))+1
 	return format(sequence, "05d")
 	
