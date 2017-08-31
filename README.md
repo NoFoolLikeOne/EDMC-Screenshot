@@ -6,7 +6,7 @@ The converted file can be saved to a different directory from the orginal file. 
 
 
 # Installation
-Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.1.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
+Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.2.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
 
 * Windows: `%LOCALAPPDATA%\EDMarketConnector\plugins` (usually `C:\Users\you\AppData\Local\EDMarketConnector\plugins`).
 * Mac: `~/Library/Application Support/EDMarketConnector/plugins` (in Finder hold ⌥ and choose Go &rarr; Library to open your `~/Library` folder).
@@ -42,3 +42,4 @@ Go to file/settings and put in:
 # Changelog
 
 * Fixed an issue where files were being overwritten when the original was deleted
+* Fixed issue when system had not been visited before sequence not generated
