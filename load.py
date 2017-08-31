@@ -78,8 +78,17 @@ def get_sq(entry):
 	body = entry['Body']
 	dir = tk.StringVar(value=config.get("PNG")).get()
 	mask = dir+'/'+system+'('+body+')_*.png'
+	print mask
 	files = glob.glob(mask)
+	print files
+	
 	n = [int(re.sub(r"\D", "", elem)) for elem in files]
+		
+	if not n:
+		n = [0]
+	
+		
+	print n
 	sequence = int(max(n))+1
 	return format(sequence, "05d")
 	
