@@ -6,7 +6,7 @@ The converted file can be saved to a different directory from the orginal file. 
 
 
 # Installation
-Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.4.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
+Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.5.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
 
 * Windows: `%LOCALAPPDATA%\EDMarketConnector\plugins` (usually `C:\Users\you\AppData\Local\EDMarketConnector\plugins`).
 * Mac: `~/Library/Application Support/EDMarketConnector/plugins` (in Finder hold ⌥ and choose Go &rarr; Library to open your `~/Library` folder).
