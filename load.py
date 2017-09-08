@@ -15,9 +15,16 @@ import myNotebook as nb
 from config import config
 
 
+
 this = sys.modules[__name__]
 this.s = None
 this.prep = {}
+
+this.debug=False
+
+def debug(d):
+	if this.debug==True:
+		print '[Screenshot] '+str(d)
 
 
 def plugin_start():
@@ -28,7 +35,7 @@ def plugin_start():
 	this.png_loc = tk.StringVar(value=config.get("PNG"))
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
 	
-	print "Screenshot loaded!"
+	print("Screenshot loaded!")
 	return "Screenshot"
 
 	
@@ -77,26 +84,21 @@ def get_sq(entry):
 	system = entry['System']
 	body = entry['Body']
 	dir = tk.StringVar(value=config.get("PNG")).get()
-	mask = dir+'/'+system+'('+body+')_*.png'
-	print mask
+	mask = dir+'/*'+system+'('+body+')_*.png'
+	debug("mask: "+mask)
 	files = glob.glob(mask)
-	
 	
 	n = []
 	for elem in files:
 		try:
 			n.append(int(elem[-9:-4]))
 		except:
-			print elem
-	#x = [int(re.sub(r"\D", "", elem)) for elem in files]
-	#n = [int(format(elem,"05d")[-9:-4]) for elem in x]
-	
-	
+			debug(elem)
+		
 	if not n:
 		n = [0]
 			
-	print n
-	print max(n)
+	
 	sequence = int(max(n))+1
 	return format(sequence, "05d")
 	
@@ -110,12 +112,23 @@ def journal_entry(cmdr, system, station, entry):
 		seq = get_sq(entry)
 			
 		## get the filename
-		f = re.compile('Screenshot_\d+.bmp')
-		bmpfile=f.search(entry['Filename']).group();
+		#f = re.compile('[HighRes|Screen.hot].*_\d+.bmp')
+		#bmpfile=f.search(entry['Filename']).group();
 		
+		#take /ED Pictures/ off the front of the name
+		bmpfile=entry['Filename'][13:]
+		
+		debug("filename "+entry['Filename'])
+		debug("filename "+bmpfile)
+		debug(bmpfile[0:7])
+		
+		if bmpfile[0:7] == "HighRes":
+			prefix="HighRes_"
+		else:
+			prefix=""
 		
 		## Construct the new filename		
-		pngfile=entry['System']+"("+entry['Body']+")_"+seq+".png"
+		pngfile=prefix+entry['System']+"("+entry['Body']+")_"+seq+".png"
 		
 		original = tk.StringVar(value=config.get("BMP")).get() + '\\'+ bmpfile
 		converted = tk.StringVar(value=config.get("PNG")).get() + '\\'+ pngfile
@@ -126,17 +139,5 @@ def journal_entry(cmdr, system, station, entry):
 		
 		if delete_original:
 			os.remove(original)
-					
+		
 		this.status['text'] = pngfile
-
-# Update some data here too
-#def cmdr_data(data):
-    #print "Commander Data"
- 
-
-# Defines location (system)
-def setLocation(location):
-	# just clearing the screenshot location
-    this.status['text'] = "Ready"
-
-# Defines balance & assets
