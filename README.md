@@ -6,7 +6,7 @@ The converted file can be saved to a different directory from the orginal file. 
 
 
 # Installation
-Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/archive/1.6.zip), open the archive (zip) and extract the folder to your EDMC plugin folder.
+Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/releases), open the archive (zip) and extract the folder to your EDMC plugin folder.
 
 Rename the folder to EDMC-Screenshot
 
@@ -46,3 +46,4 @@ Go to file/settings and put in:
 * Fixed an issue where files were being overwritten when the original was deleted
 * Fixed issue when system had not been visited before sequence not generated
 * Fixed issue where system name numbers were being appended to the sequence
+* Added option to organise files in a directory per system
