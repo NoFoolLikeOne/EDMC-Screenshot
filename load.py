@@ -5,7 +5,9 @@ import ttk
 import Tkinter as tk
 import requests
 import os
+import errno
 import glob
+import StringIO
 
 from PIL import Image
 
@@ -34,7 +36,7 @@ def plugin_start():
 	this.bmp_loc = tk.StringVar(value=config.get("BMP"))
 	this.png_loc = tk.StringVar(value=config.get("PNG"))
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
-	
+	this.mkdir = tk.StringVar(value=config.get("Mkdir"))
 	print("Screenshot loaded!")
 	return "Screenshot"
 
@@ -57,13 +59,14 @@ def plugin_prefs(parent,cmdr,is_beta):
 	png_entry.grid(padx=10, row=12, column=1, sticky=tk.EW)
 
 	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid()
+	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid()
 	
 	return frame
 
-def plugin_app(parent):
-	label = tk.Label(parent, text="Screenshot:")
-	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
 	
+def plugin_app(parent):
+	this.label = tk.Label(parent, text="Screenshot:")
+	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
 	
 	
 	return (label, this.status)
@@ -75,7 +78,8 @@ def prefs_changed():
 	config.set("BMP", this.bmp_loc.get())
 	config.set("PNG", this.png_loc.get())
 	config.set("DelOrg", this.delete_org.get())
-	this.status['text'] = "Prefs changed"
+	config.set("Mkdir", this.mkdir.get())
+	
 	
 
 	
@@ -84,7 +88,13 @@ def get_sq(entry):
 	system = entry['System']
 	body = entry['Body']
 	dir = tk.StringVar(value=config.get("PNG")).get()
-	mask = dir+'/*'+system+'('+body+')_*.png'
+	mkdir = tk.StringVar(value=config.get("Mkdir")).get()
+	
+	if mkdir:
+		mask = dir+'/'+system+'/'+'/*'+system+'('+body+')_*.png'
+	else:
+		mask = dir+'/*'+system+'('+body+')_*.png'	
+		
 	debug("mask: "+mask)
 	files = glob.glob(mask)
 	
@@ -102,7 +112,14 @@ def get_sq(entry):
 	sequence = int(max(n))+1
 	return format(sequence, "05d")
 	
-
+def make_sure_path_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+	
+	
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
 
@@ -130,13 +147,29 @@ def journal_entry(cmdr, system, station, entry):
 		## Construct the new filename		
 		pngfile=prefix+entry['System']+"("+entry['Body']+")_"+seq+".png"
 		
+		mkdir = tk.StringVar(value=config.get("Mkdir")).get()
+		print mkdir
+		
 		original = tk.StringVar(value=config.get("BMP")).get() + '\\'+ bmpfile
-		converted = tk.StringVar(value=config.get("PNG")).get() + '\\'+ pngfile
-		delete_original = tk.StringVar(value=config.get("DelOrg")).get()
+		
+		newdir = tk.StringVar(value=config.get("PNG")).get() + '\\'+ system
+		
+		if mkdir == "1":
+			print "With dir " + mkdir
+			make_sure_path_exists(newdir)
+			converted = newdir + '\\'+ pngfile
+			print converted
+		else:	
+			print "Without dir " + mkdir
+			converted = tk.StringVar(value=config.get("PNG")).get() + '\\'+ pngfile
+			print converted
 			
 		im = Image.open(original)
 		im.save(converted,"PNG");
 		
+		delete_original = tk.StringVar(value=config.get("DelOrg")).get()
+				
+				
 		if delete_original:
 			os.remove(original)
 		
