@@ -8,6 +8,8 @@ import os
 import errno
 import glob
 import StringIO
+import ctypes
+from ctypes.wintypes import *
 
 from PIL import Image
 
@@ -100,22 +102,30 @@ def plugin_prefs(parent,cmdr,is_beta):
 	
 def plugin_app(parent):
 	debug("plugin_app");
-	this.label = tk.Label(parent, text="Screenshot:")
-	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
+	this.container = tk.Frame(parent)
+	this.container.columnconfigure(2, weight=1)
+	this.label = tk.Label(this.container, text="Screenshot:")
+	this.status = tk.Label(this.container, anchor=tk.W, text="Ready")
+	this.screenshot = tk.Label(this.container, anchor=tk.W)
+	this.screenshot.grid(padx=10, row=1,column=0,columnspan=2, sticky=tk.W)
+	this.screenshot.grid_remove()
+	this.screenshot.place(x=0, y=0)
+	this.label.grid(row=0,column=0, sticky=tk.W)
+	this.status.grid(padx=10, row=0,column=1, sticky=tk.W)
 	debug_settings()
 	display()
-	return (label, this.status)
+	return (this.container)
 
 
 def display():
 	debug("display: "+this.hideui.get())
 	if this.hideui.get() == "1":
 		debug("Hide Display")
-		this.label.grid_remove()
-		this.status.grid_remove()
+		this.container.grid_remove()
+		#this.status.grid_remove()
 	else:
-		this.label.grid()
-		this.status.grid()
+		#this.label.grid()
+		this.container.grid()
 		
 def getInputDir():
 	debug(this.bmp_loc.get())
@@ -157,7 +167,7 @@ def getFilename(source,system,body,cmdr):
 	debug("Output Mask: "+mask)
 	
 	files = glob.glob(dir+'/'+mask)
-	debug(files)
+	
 	
 	# This is not very elegant. Is there a better way?
 	# counting won't work if there ar gaps in the sequence because of deletions
@@ -193,6 +203,24 @@ def make_sure_path_exists(path):
         if exception.errno != errno.EEXIST:
             raise
 	
+def thumbnail(img,size,xy):
+	if xy == "x":
+		newwidth = size
+		newheight = newwidth * (float(img.size[0])/float(img.size[1]))
+	else:
+		newheight = size
+		newwidth = size * (float(img.size[1])/float(img.size[0]))
+		
+	
+	resize = newwidth, newheight
+	
+	img.thumbnail(resize, Image.ANTIALIAS)
+	
+	cbuf= StringIO.StringIO()
+	img.save(cbuf, format= 'GIF')
+	return cbuf.getvalue()	
+	
+	
 	
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
@@ -207,6 +235,11 @@ def journal_entry(cmdr, system, station, entry):
 				
 		im = Image.open(original)
 		im.save(converted,"PNG");
+		
+		thumbnail(im,240,"x")
+		this._IMG_THUMB = tk.PhotoImage(data=thumbnail(im,240,"y"))
+		this.screenshot["image"]=this._IMG_THUMB
+		this.screenshot.grid()
 		
 		if this.delete_org.get() == "1":
 			os.remove(original)
