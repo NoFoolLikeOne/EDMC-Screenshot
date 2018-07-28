@@ -106,10 +106,11 @@ def getInputDir():
 	
 def getOutputDir(system):
 	debug("eh"+this.png_loc.get())
+		
 	if this.mkdir.get() == "1":
-		return this.mkdir.get()+'/'+system
+		return this.png_loc.get()+'\\'+system
 	else:
-		return this.mkdir.get()
+		return this.png_loc.get()
 	
 def isHighRes(source):
 	if source[0:7] == "HighRes":
@@ -153,9 +154,9 @@ def getFilename(source,system,body,cmdr):
 			
 	
 	sequencemask="[0-9][0-9][0-9][0-9][0-9]"
-	sequence = dir+'/'+format(int(max(n))+1, "05d")
+	sequence = format(int(max(n))+1, "05d")
 	
-	fname = mask.replace(sequencemask,sequence)
+	fname = dir+'\\'+mask.replace(sequencemask,sequence)
 	debug("getFileMask: "+fname)
 	
 	return fname
