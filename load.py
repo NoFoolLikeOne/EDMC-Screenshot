@@ -22,10 +22,10 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.debug=False
+
 
 def debug(d):
-	if this.debug==True:
+	if this.debug.get() == "1":
 		print '[Screenshot] '+str(d)
 
 
@@ -37,41 +37,12 @@ def plugin_start():
 	this.png_loc = tk.StringVar(value=config.get("PNG"))
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
 	this.mkdir = tk.StringVar(value=config.get("Mkdir"))
-	print("Screenshot loaded!")
+	this.hideui = tk.StringVar(value=config.get("HideUi"))
+	this.timer  = tk.StringVar(value=config.get("Timer"))
+	this.debug  = tk.StringVar(value=config.get("Debug"))
+		
 	return "Screenshot"
 
-	
-
-def plugin_prefs(parent,cmdr,is_beta):  
-	frame = nb.Frame(parent)
-	frame.columnconfigure(1, weight=1)
-
-	bmp_label = nb.Label(frame, text="Screenshot Directory")
-	bmp_label.grid(padx=10, row=10, sticky=tk.W)
-
-	bmp_entry = nb.Entry(frame, textvariable=this.bmp_loc)
-	bmp_entry.grid(padx=10, row=10, column=1, sticky=tk.EW)
-
-	png_label = nb.Label(frame, text="Conversion Directory")
-	png_label.grid(padx=10, row=12, sticky=tk.W)
-
-	png_entry = nb.Entry(frame, textvariable=this.png_loc)
-	png_entry.grid(padx=10, row=12, column=1, sticky=tk.EW)
-
-	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid()
-	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid()
-	
-	return frame
-
-	
-def plugin_app(parent):
-	this.label = tk.Label(parent, text="Screenshot:")
-	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
-	
-	
-	return (label, this.status)
-
-# Log in
 
 # Settings dialog dismissed
 def prefs_changed():
@@ -79,8 +50,62 @@ def prefs_changed():
 	config.set("PNG", this.png_loc.get())
 	config.set("DelOrg", this.delete_org.get())
 	config.set("Mkdir", this.mkdir.get())
+	config.set("HideUI", this.hideui.get())
+	config.set("Timer", this.timer.get())
+	config.set("Debug", this.debug.get())
+	debug_settings()
+	
+def debug_settings():
+	if this.debug.get() == "1":
+		print "Source Directory "+this.bmp_loc.get()
+		print "Target Directory "+this.png_loc.get()
+		print "Delete Originals "+this.delete_org.get()
+		print "Make System Directory "+this.mkdir.get()
+		print "HideUI "+this.hideui.get()
+		print "Timer "+this.timer.get()
+		print "Debug "+this.debug.get()
 	
 	
+
+def plugin_prefs(parent,cmdr,is_beta):  
+	frame = nb.Frame(parent)
+	frame.columnconfigure(3, weight=1)
+
+	bmp_label = nb.Label(frame, text="Screenshot Directory")
+	bmp_label.grid(padx=10, row=0,column=0, sticky=tk.W)
+
+	bmp_entry = nb.Entry(frame, textvariable=this.bmp_loc)
+	bmp_entry.grid(padx=10, row=0, column=2,columnspan=2, sticky=tk.EW)
+
+	png_label = nb.Label(frame, text="Conversion Directory")
+	png_label.grid(padx=10, row=1, column=0, sticky=tk.W)
+
+	png_entry = nb.Entry(frame, textvariable=this.png_loc)
+	png_entry.grid(padx=10, row=1, column=2,columnspan=2, sticky=tk.EW)
+
+	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Hide the timed capture button", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Enable Debugging", variable=this.debug).grid(padx=10, row=6, column=0, sticky=tk.EW)
+	
+	
+	return frame
+
+	
+def plugin_app(parent):
+	this.label = tk.Label(parent, text="Screenshot:")
+	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
+	print "debug("
+	print this.debug.get()
+	print ")"
+	return (label, this.status)
+
+# Log in
+
+def inputdir():
+	debug(this.bmp_loc.get())
+
 
 	
 #get the file sequence number from destination	
