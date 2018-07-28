@@ -108,7 +108,7 @@ def getOutputDir(system):
 	debug("eh"+this.png_loc.get())
 		
 	if this.mkdir.get() == "1":
-		return this.png_loc.get()+'\\'+system
+		return this.png_loc.get()+'/'+system
 	else:
 		return this.png_loc.get()
 	
@@ -122,7 +122,8 @@ def getFileMask(source,system,body,cmdr):
 	#This will be updated to allow different file mask formats
 	#selected from teh front end
 	
-	sequencemask="[0-9][0-9][0-9][0-9][0-9]"
+	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
+	
 	
 	mask=system+'('+body+')_'+sequencemask+'.png' 	
 	
@@ -137,7 +138,9 @@ def getFilename(source,system,body,cmdr):
 	debug("Output Directory: "+dir)
 	mask = getFileMask(source,system,body,cmdr)
 	debug("Output Mask: "+mask)
-	files = glob.glob(mask)
+	
+	files = glob.glob(dir+'/'+mask)
+	debug(files)
 	
 	# This is not very elegant. Is there a better way?
 	# counting won't work if there ar gaps in the sequence because of deletions
@@ -145,7 +148,7 @@ def getFilename(source,system,body,cmdr):
 	for elem in files:
 		try:  
 			n.append(int(elem[-9:-4]))
-			debug(elem)
+			debug("elem: "+elem)
 		except:
 			debug(elem)
 		
@@ -153,43 +156,18 @@ def getFilename(source,system,body,cmdr):
 		n = [0]
 			
 	
-	sequencemask="[0-9][0-9][0-9][0-9][0-9]"
+	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
 	sequence = format(int(max(n))+1, "05d")
 	
-	fname = dir+'\\'+mask.replace(sequencemask,sequence)
+	fname = dir+'/'+mask.replace(sequencemask,sequence)
 	debug("getFileMask: "+fname)
 	
 	return fname
 	
-	
-#get the file sequence number from destination	
-def get_sq(entry):
-	system = entry['System']
-	body = entry['Body']
-	dir = tk.StringVar(value=config.get("PNG")).get()
-	mkdir = tk.StringVar(value=config.get("Mkdir")).get()
-	
-	if mkdir:
-		mask = dir+'/'+system+'/'+'/*'+system+'('+body+')_*.png'
-	else:
-		mask = dir+'/*'+system+'('+body+')_*.png'	
-		
-	#debug("mask: "+mask)
-	files = glob.glob(mask)
-	
-	n = []
-	for elem in files:
-		try:
-			n.append(int(elem[-9:-4]))
-		except:
-			debug(elem)
-		
-	if not n:
-		n = [0]
-			
-	
-	sequence = int(max(n))+1
-	return format(sequence, "05d")
+def getBmpPath(source):
+    # remove the ED Screenshot part of the name
+	bmpfile=source[13:]
+	return this.bmp_loc.get()+"\\"+bmpfile
 	
 def make_sure_path_exists(path):
     try:
@@ -204,54 +182,15 @@ def journal_entry(cmdr, system, station, entry):
 
     if entry['event'] == 'Screenshot':
 		this.status['text'] = 'processing...'	
-		## get the numeric component from the filename	
-		seq = get_sq(entry)
 		
-		getFilename(entry['Filename'][13:],entry['System'],entry['Body'],cmdr)
-		
-		## get the filename
-		#f = re.compile('[HighRes|Screen.hot].*_\d+.bmp')
-		#bmpfile=f.search(entry['Filename']).group();
-		
-		#take /ED Pictures/ off the front of the name
-		bmpfile=entry['Filename'][13:]
-		
-		debug("filename "+entry['Filename'])
-		debug("filename "+bmpfile)
-		debug(bmpfile[0:7])
-		
-		if bmpfile[0:7] == "HighRes":
-			prefix="HighRes_"
-		else:
-			prefix=""
-		
-		## Construct the new filename		
-		pngfile=prefix+entry['System']+"("+entry['Body']+")_"+seq+".png"
-		
-		mkdir = tk.StringVar(value=config.get("Mkdir")).get()
-		print mkdir
-		
-		original = tk.StringVar(value=config.get("BMP")).get() + '\\'+ bmpfile
-		
-		newdir = tk.StringVar(value=config.get("PNG")).get() + '\\'+ system
-		
-		if mkdir == "1":
-			print "With dir " + mkdir
-			make_sure_path_exists(newdir)
-			converted = newdir + '\\'+ pngfile
-			print converted
-		else:	
-			print "Without dir " + mkdir
-			converted = tk.StringVar(value=config.get("PNG")).get() + '\\'+ pngfile
-			print converted
-			
+		original = getBmpPath(entry['Filename'])
+		converted = getFilename(entry['Filename'][13:],entry['System'],entry['Body'],cmdr)
+				
 		im = Image.open(original)
 		im.save(converted,"PNG");
 		
-		delete_original = tk.StringVar(value=config.get("DelOrg")).get()
-				
-				
-		if delete_original:
+		if this.delete_org.get() == "1":
 			os.remove(original)
 		
-		this.status['text'] = pngfile
+				
+		this.status['text'] = os.path.basename(converted)
