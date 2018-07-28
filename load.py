@@ -25,7 +25,7 @@ this.prep = {}
 
 
 def debug(d):
-	if this.debug.get() == "1":
+	if this.vdebug.get() == "1":
 		print '[Screenshot] '+str(d)
 
 
@@ -39,7 +39,7 @@ def plugin_start():
 	this.mkdir = tk.StringVar(value=config.get("Mkdir"))
 	this.hideui = tk.StringVar(value=config.get("HideUi"))
 	this.timer  = tk.StringVar(value=config.get("Timer"))
-	this.debug  = tk.StringVar(value=config.get("Debug"))
+	this.vdebug  = tk.StringVar(value=config.get("Debug"))
 		
 	return "Screenshot"
 
@@ -52,18 +52,18 @@ def prefs_changed():
 	config.set("Mkdir", this.mkdir.get())
 	config.set("HideUI", this.hideui.get())
 	config.set("Timer", this.timer.get())
-	config.set("Debug", this.debug.get())
+	config.set("Debug", this.vdebug.get())
 	debug_settings()
 	
 def debug_settings():
-	if this.debug.get() == "1":
+	if this.vdebug.get() == "1":
 		print "Source Directory "+this.bmp_loc.get()
 		print "Target Directory "+this.png_loc.get()
 		print "Delete Originals "+this.delete_org.get()
 		print "Make System Directory "+this.mkdir.get()
 		print "HideUI "+this.hideui.get()
 		print "Timer "+this.timer.get()
-		print "Debug "+this.debug.get()
+		print "Debug "+this.vdebug.get()
 	
 	
 
@@ -87,7 +87,7 @@ def plugin_prefs(parent,cmdr,is_beta):
 	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.EW)
 	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.EW)
 	nb.Checkbutton(frame, text="Hide the timed capture button", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Enable Debugging", variable=this.debug).grid(padx=10, row=6, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=6, column=0, sticky=tk.EW)
 	
 	
 	return frame
@@ -96,17 +96,70 @@ def plugin_prefs(parent,cmdr,is_beta):
 def plugin_app(parent):
 	this.label = tk.Label(parent, text="Screenshot:")
 	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
-	print "debug("
-	print this.debug.get()
-	print ")"
 	return (label, this.status)
 
 # Log in
 
-def inputdir():
+def getInputDir():
 	debug(this.bmp_loc.get())
+	return this.bmp_loc.get()
+	
+def getOutputDir(system):
+	debug("eh"+this.png_loc.get())
+	if this.mkdir.get() == "1":
+		return this.mkdir.get()+'/'+system
+	else:
+		return this.mkdir.get()
+	
+def isHighRes(source):
+	if source[0:7] == "HighRes":
+		return True
+	else:
+		return False
+	
+def getFileMask(source,system,body,cmdr):
+	#This will be updated to allow different file mask formats
+	#selected from teh front end
+	
+	sequencemask="[0-9][0-9][0-9][0-9][0-9]"
+	
+	mask=system+'('+body+')_'+sequencemask+'.png' 	
+	
+	# We want to distinguish high res could make this optional
+	if isHighRes(source):
+		mask='HighRes_'+mask
+	
+	return mask
 
-
+def getFilename(source,system,body,cmdr):
+	dir = getOutputDir(system)
+	debug("Output Directory: "+dir)
+	mask = getFileMask(source,system,body,cmdr)
+	debug("Output Mask: "+mask)
+	files = glob.glob(mask)
+	
+	# This is not very elegant. Is there a better way?
+	# counting won't work if there ar gaps in the sequence because of deletions
+	n = []
+	for elem in files:
+		try:  
+			n.append(int(elem[-9:-4]))
+			debug(elem)
+		except:
+			debug(elem)
+		
+	if not n:
+		n = [0]
+			
+	
+	sequencemask="[0-9][0-9][0-9][0-9][0-9]"
+	sequence = dir+'/'+format(int(max(n))+1, "05d")
+	
+	fname = mask.replace(sequencemask,sequence)
+	debug("getFileMask: "+fname)
+	
+	return fname
+	
 	
 #get the file sequence number from destination	
 def get_sq(entry):
@@ -120,7 +173,7 @@ def get_sq(entry):
 	else:
 		mask = dir+'/*'+system+'('+body+')_*.png'	
 		
-	debug("mask: "+mask)
+	#debug("mask: "+mask)
 	files = glob.glob(mask)
 	
 	n = []
@@ -152,7 +205,9 @@ def journal_entry(cmdr, system, station, entry):
 		this.status['text'] = 'processing...'	
 		## get the numeric component from the filename	
 		seq = get_sq(entry)
-			
+		
+		getFilename(entry['Filename'][13:],entry['System'],entry['Body'],cmdr)
+		
 		## get the filename
 		#f = re.compile('[HighRes|Screen.hot].*_\d+.bmp')
 		#bmpfile=f.search(entry['Filename']).group();
