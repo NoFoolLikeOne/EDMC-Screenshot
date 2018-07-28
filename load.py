@@ -37,15 +37,16 @@ def plugin_start():
 	this.png_loc = tk.StringVar(value=config.get("PNG"))
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
 	this.mkdir = tk.StringVar(value=config.get("Mkdir"))
-	this.hideui = tk.StringVar(value=config.get("HideUi"))
+	this.hideui = tk.StringVar(value=config.get("HideUI"))
 	this.timer  = tk.StringVar(value=config.get("Timer"))
 	this.vdebug  = tk.StringVar(value=config.get("Debug"))
-		
+	debug("plugin_start");
 	return "Screenshot"
 
 
 # Settings dialog dismissed
 def prefs_changed():
+	debug("prefs_changed");
 	config.set("BMP", this.bmp_loc.get())
 	config.set("PNG", this.png_loc.get())
 	config.set("DelOrg", this.delete_org.get())
@@ -54,8 +55,10 @@ def prefs_changed():
 	config.set("Timer", this.timer.get())
 	config.set("Debug", this.vdebug.get())
 	debug_settings()
+	display()
 	
 def debug_settings():
+	debug("debug_settings");
 	if this.vdebug.get() == "1":
 		print "Source Directory "+this.bmp_loc.get()
 		print "Target Directory "+this.png_loc.get()
@@ -65,9 +68,9 @@ def debug_settings():
 		print "Timer "+this.timer.get()
 		print "Debug "+this.vdebug.get()
 	
-	
 
 def plugin_prefs(parent,cmdr,is_beta):  
+	debug("plugin_prefs");
 	frame = nb.Frame(parent)
 	frame.columnconfigure(3, weight=1)
 
@@ -90,16 +93,30 @@ def plugin_prefs(parent,cmdr,is_beta):
 	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=6, column=0, sticky=tk.EW)
 	
 	
+	
 	return frame
+
 
 	
 def plugin_app(parent):
+	debug("plugin_app");
 	this.label = tk.Label(parent, text="Screenshot:")
 	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
+	debug_settings()
+	display()
 	return (label, this.status)
 
-# Log in
 
+def display():
+	debug("display: "+this.hideui.get())
+	if this.hideui.get() == "1":
+		debug("Hide Display")
+		this.label.grid_remove()
+		this.status.grid_remove()
+	else:
+		this.label.grid()
+		this.status.grid()
+		
 def getInputDir():
 	debug(this.bmp_loc.get())
 	return this.bmp_loc.get()
@@ -179,8 +196,10 @@ def make_sure_path_exists(path):
 	
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
-
-    if entry['event'] == 'Screenshot':
+	
+	display()
+	
+	if entry['event'] == 'Screenshot':
 		this.status['text'] = 'processing...'	
 		
 		original = getBmpPath(entry['Filename'])
