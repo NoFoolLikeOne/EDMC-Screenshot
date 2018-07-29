@@ -1,18 +1,20 @@
 # EDMC-Screenshot
 A plugin for EDMC that detects screenshot events are converts them to PNG format
 
-The plugin takes the existing screenshot file and generate a new name based on the mask System(Body)_nnn.png
-The converted file can be saved to a different directory from the orginal file. The original file can optionally be deleted. 
+*The plugin takes the existing screenshot file and generate a new name based on the selected mask
+*The converted file can be saved to a different directory or drive from the orginal file. 
+*The original file can optionally be deleted after conversion
+*The plugin can trigger screenshots on a timer
+*Displays the image and allow the user to save a preset crop
 
 
 # Installation
-Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/releases), open the archive (zip) and extract the folder to your EDMC plugin folder.
+Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/releases), open the archive (zip) and extract the folder  to your EDMC plugin folder.
 
-Rename the folder to EDMC-Screenshot
+To install a downloaded plugin:
 
-* Windows: `%LOCALAPPDATA%\EDMarketConnector\plugins` (usually `C:\Users\you\AppData\Local\EDMarketConnector\plugins`).
-* Mac: `~/Library/Application Support/EDMarketConnector/plugins` (in Finder hold ⌥ and choose Go &rarr; Library to open your `~/Library` folder).
-* Linux: `$XDG_DATA_HOME/EDMarketConnector/plugins`, or `~/.local/share/EDMarketConnector/plugins` if `$XDG_DATA_HOME` is unset.
+* On the Plugins settings tab press the “Open” button. This reveals the plugins folder where this app looks for plugins.
+* Open the .zip archive that you downloaded and move the folder contained inside into the plugins folder.
 
 You will need to re-start EDMC for it to notice the plugin.
 
@@ -21,11 +23,18 @@ Go to file/settings and put in:
 * the directory where the screenshots are stored in game
 * the directory where you want the converted screenshots to go
 * Choose whether to delete the original file
+* Group files by system directory
+* Hide the user interface
+* Choose a file mask 
+* Instruct the timer to use High Res Screenshots (not recommended)
+* Enable Debugging (not recommended)
 
 # To Do
 * Add defensive code in case the directories do not exist or are otherwise invalid
 * Add option to have a high and low res version when the game saves hi resolution
-* Add an options to save a small version for easier up load 800x600 or the like 
+* Add an options to save thumbnails
+* Option to add planetery coordinates to the file name
+* Configure additional crops
 
 
 # Elite Dangerous Screenshot event format
@@ -41,9 +50,3 @@ Go to file/settings and put in:
   "Body": "New Dawn Station"
 }
 ```
-# Changelog
-
-* Fixed an issue where files were being overwritten when the original was deleted
-* Fixed issue when system had not been visited before sequence not generated
-* Fixed issue where system name numbers were being appended to the sequence
-* Added option to organise files in a directory per system
