@@ -11,6 +11,7 @@ import StringIO
 import ctypes
 import json
 from ctypes.wintypes import *
+from ttkHyperlinkLabel import HyperlinkLabel
 
 from PIL import Image
 
@@ -48,6 +49,7 @@ GetForegroundWindow 	   = ctypes.windll.user32.GetForegroundWindow
 
 
 
+
 GetProcessHandleFromHwnd = ctypes.windll.oleacc.GetProcessHandleFromHwnd
 FindWindow = ctypes.windll.user32.FindWindowW
 
@@ -58,7 +60,24 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
+this.version="2.0.0"
+this.version_url="https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
 
+
+def checkVersion():
+	versions = requests.get(this.version_url)	
+		
+	getnews=True
+	for line in versions.content.split("\r\n"):
+		rec=line.split("\t")
+		if rec[0] == 'EDMC-Screenshot':
+			this.status_url=rec[2]
+			if rec[1] != this.version:
+				this.status_text = "Upgrade to version "+rec[1]
+			else:
+				this.status_text = "Ready"
+		
+			
 
 def debug(d):
 	if this.vdebug.get() == "1":
@@ -83,6 +102,7 @@ def plugin_start():
 		the.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.jpg")
 		
 	debug("plugin_start"+this.mask.get());
+	checkVersion()
 	
 	debug("plugin_start");
 	return "Screenshot"
@@ -172,7 +192,8 @@ def plugin_app(parent):
 	this.container = tk.Frame(parent)
 	this.container.columnconfigure(3, weight=1)
 	this.label = tk.Label(this.container, text="Screenshot:")
-	this.status = tk.Label(this.container, anchor=tk.W, text="Ready")
+	this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
+	this.status["url"]=this.status_url
 	this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = io_LEDRedOn), anchor=tk.W)
 	io_LEDRedOn=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_enabled.gif")
 	io_LEDRedOff=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_disabled.gif")
@@ -394,6 +415,7 @@ def journal_entry(cmdr, system, station, entry):
 		
 		this.processing = False		
 		this.status['text'] = os.path.basename(converted)
+		this.status["url"]=None
 
 def sendKeyPress():
 	if game_running():
