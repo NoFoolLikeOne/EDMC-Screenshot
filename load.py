@@ -8,13 +8,51 @@ import os
 import errno
 import glob
 import StringIO
+import ctypes
+import json
+from ctypes.wintypes import *
+from ttkHyperlinkLabel import HyperlinkLabel
 
 from PIL import Image
+
+TARGET_PANEL=2
+COMMS_PANEL=3
+ROLE_PANEL=4
+SYSTEMS_PANEL=1
+SYSTEM_MAP=7
+GALMAP=6
 
 
 from config import applongname, appversion
 import myNotebook as nb
 from config import config
+
+import ctypes
+from ctypes.wintypes import *
+from sys import platform
+import key
+
+VK_F10 = 0x79
+VK_LEFTALT = 0xA4
+VK_F11 = 0x7A
+WM_KEYDOWN = 0x0100
+
+EnumWindows            = ctypes.windll.user32.EnumWindows
+EnumWindowsProc        = ctypes.WINFUNCTYPE(BOOL, HWND, LPARAM)
+
+CloseHandle            = ctypes.windll.kernel32.CloseHandle
+
+GetWindowText          = ctypes.windll.user32.GetWindowTextW
+GetWindowText.argtypes = [HWND, LPWSTR, ctypes.c_int]
+GetWindowTextLength    = ctypes.windll.user32.GetWindowTextLengthW
+GetForegroundWindow 	   = ctypes.windll.user32.GetForegroundWindow
+
+
+
+
+GetProcessHandleFromHwnd = ctypes.windll.oleacc.GetProcessHandleFromHwnd
+FindWindow = ctypes.windll.user32.FindWindowW
+
 
 
 
@@ -22,10 +60,27 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.debug=False
+this.version="2.0.0"
+this.version_url="https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
+
+
+def checkVersion():
+	versions = requests.get(this.version_url)	
+		
+	getnews=True
+	for line in versions.content.split("\r\n"):
+		rec=line.split("\t")
+		if rec[0] == 'EDMC-Screenshot':
+			this.status_url=rec[2]
+			if rec[1] != this.version:
+				this.status_text = "Upgrade to version "+rec[1]
+			else:
+				this.status_text = "Ready"
+		
+			
 
 def debug(d):
-	if this.debug==True:
+	if this.vdebug.get() == "1":
 		print '[Screenshot] '+str(d)
 
 
@@ -37,71 +92,205 @@ def plugin_start():
 	this.png_loc = tk.StringVar(value=config.get("PNG"))
 	this.delete_org = tk.StringVar(value=config.get("DelOrg"))
 	this.mkdir = tk.StringVar(value=config.get("Mkdir"))
-	print("Screenshot loaded!")
+	this.hideui = tk.StringVar(value=config.get("HideUI"))
+	this.timer  = tk.StringVar(value=config.get("Timer"))
+	this.vdebug  = tk.StringVar(value=config.get("Debug"))
+	
+	if config.get("Mask"):
+		this.mask = tk.StringVar(value=config.get("Mask"))
+	else:
+		the.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.jpg")
+		
+	debug("plugin_start"+this.mask.get());
+	checkVersion()
+	
+	debug("plugin_start");
 	return "Screenshot"
 
-	
-
-def plugin_prefs(parent,cmdr,is_beta):  
-	frame = nb.Frame(parent)
-	frame.columnconfigure(1, weight=1)
-
-	bmp_label = nb.Label(frame, text="Screenshot Directory")
-	bmp_label.grid(padx=10, row=10, sticky=tk.W)
-
-	bmp_entry = nb.Entry(frame, textvariable=this.bmp_loc)
-	bmp_entry.grid(padx=10, row=10, column=1, sticky=tk.EW)
-
-	png_label = nb.Label(frame, text="Conversion Directory")
-	png_label.grid(padx=10, row=12, sticky=tk.W)
-
-	png_entry = nb.Entry(frame, textvariable=this.png_loc)
-	png_entry.grid(padx=10, row=12, column=1, sticky=tk.EW)
-
-	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid()
-	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid()
-	
-	return frame
-
-	
-def plugin_app(parent):
-	this.label = tk.Label(parent, text="Screenshot:")
-	this.status = tk.Label(parent, anchor=tk.W, text="Ready")
-	
-	
-	return (label, this.status)
-
-# Log in
 
 # Settings dialog dismissed
 def prefs_changed():
+	debug("prefs_changed");
 	config.set("BMP", this.bmp_loc.get())
 	config.set("PNG", this.png_loc.get())
 	config.set("DelOrg", this.delete_org.get())
 	config.set("Mkdir", this.mkdir.get())
+	config.set("HideUI", this.hideui.get())
+	config.set("Timer", this.timer.get())
+	config.set("Debug", this.vdebug.get())
+	config.set("Mask", this.maskVar.get())
+	debug("PREF: "+this.mask.get())
+	debug("PREF: "+this.mask.get())
+	debug_settings()
+	display()
 	
+def debug_settings():
+	debug("debug_settings");
+	if this.vdebug.get() == "1":
+		print "Source Directory "+this.bmp_loc.get()
+		print "Target Directory "+this.png_loc.get()
+		print "Delete Originals "+this.delete_org.get()
+		print "Make System Directory "+this.mkdir.get()
+		print "HideUI "+this.hideui.get()
+		print "Timer "+this.timer.get()
+		print "Debug "+this.vdebug.get()
 	
 
+def plugin_prefs(parent,cmdr,is_beta):  
+	debug("plugin_prefs");
+	frame = nb.Frame(parent)
+	frame.columnconfigure(3, weight=1)
+
+	bmp_label = nb.Label(frame, text="Screenshot Directory")
+	bmp_label.grid(padx=10, row=0,column=0, sticky=tk.W)
+
+	bmp_entry = nb.Entry(frame, textvariable=this.bmp_loc)
+	bmp_entry.grid(padx=10, row=0, column=1,columnspan=2, sticky=tk.W)
+
+	png_label = nb.Label(frame, text="Conversion Directory")
+	png_label.grid(padx=10, row=1, column=0, sticky=tk.W)
+
+	png_entry = nb.Entry(frame, textvariable=this.png_loc)
+	png_entry.grid(padx=10, row=1, column=1,columnspan=2, sticky=tk.W)
+
+	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.W)
 	
-#get the file sequence number from destination	
-def get_sq(entry):
-	system = entry['System']
-	body = entry['Body']
-	dir = tk.StringVar(value=config.get("PNG")).get()
-	mkdir = tk.StringVar(value=config.get("Mkdir")).get()
 	
-	if mkdir:
-		mask = dir+'/'+system+'/'+'/*'+system+'('+body+')_*.png'
-	else:
-		mask = dir+'/*'+system+'('+body+')_*.png'	
+	Masks = [
+			"SYSTEM(BODY)_NNNNN.png",
+			"SYSTEM(CMDR)_NNNNN.png",
+			"BODY(CMDR)_NNNNN.png",
+			"SYSTEM_(BODY)_CMDR_NNNNN.png"
+	]
 		
-	debug("mask: "+mask)
-	files = glob.glob(mask)
+	this.maskVar = tk.StringVar(frame)
+	if this.mask.get():
+		this.maskVar.set(this.mask.get()) # default value
+	else:	
+		this.maskVar.set(Masks[0])
+
+	popLabel = nb.Label(frame, text="File Mask")
+	popupTypes = tk.OptionMenu(frame, this.maskVar, *Masks)
+	maskVar.trace('w', change_mask)
+	popupTypes.grid(row = 6, column = 1, columnspan=2, sticky=tk.W)
+	popLabel.grid(padx=10,row = 6, column = 0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=7, column=0, sticky=tk.EW)
 	
+	
+	
+	return frame
+
+def change_mask(*args):
+	this.mask.set(this.maskVar.get())
+	
+def plugin_app(parent):
+	debug("plugin_app");
+	this.parent = parent
+	this.container = tk.Frame(parent)
+	this.container.columnconfigure(3, weight=1)
+	this.label = tk.Label(this.container, text="Screenshot:")
+	this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
+	this.status["url"]=this.status_url
+	this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = io_LEDRedOn), anchor=tk.W)
+	io_LEDRedOn=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_enabled.gif")
+	io_LEDRedOff=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_disabled.gif")
+	this.timex.config(text = "False", image=io_LEDRedOff)
+	this.timex.grid(padx=10, row=0,column=2, sticky=tk.E)
+
+	
+	
+	this.images = tk.Frame(this.container)
+	this.images.grid(row=1,column=0,columnspan=3,sticky=tk.W)
+	this.images.columnconfigure(2, weight=1)
+	
+	this.screenshot = tk.Label(this.images, anchor=tk.W)
+	this.screenshot.grid(padx=10, row=0,column=0,columnspan=1, sticky=tk.W)
+	this.screenshot.grid_remove()
+	this.screenshot.bind("<Button-1>",save_screenshot)  
+	this.cropped  = tk.Label(this.images, anchor=tk.W)
+	this.cropped.grid(padx=10, row=0,column=1,columnspan=1, sticky=tk.W)
+	this.cropped.bind("<Button-1>",save_crop)  
+	this.cropped.grid_remove()
+	this.label.grid(row=0,column=0, sticky=tk.W)
+	this.status.grid(padx=10, row=0,column=1, sticky=tk.W)
+	debug_settings()
+	display()
+	this.processing=False
+	this.parent.after(1000,sendKeyPress)
+	
+	return (this.container)
+
+
+def display():
+	debug("display: "+this.hideui.get())
+	if this.hideui.get() == "1":
+		debug("Hide Display")
+		this.container.grid_remove()
+		#this.status.grid_remove()
+	else:
+		#this.label.grid()
+		this.container.grid()
+		
+def getInputDir():
+	debug(this.bmp_loc.get())
+	return this.bmp_loc.get()
+	
+def getOutputDir(system):
+	debug("eh"+this.png_loc.get())
+		
+	if this.mkdir.get() == "1":
+		make_sure_path_exists(this.png_loc.get()+'/'+system)
+		return this.png_loc.get()+'/'+system
+	else:
+		return this.png_loc.get()
+	
+def isHighRes(source):
+	if source[0:7] == "HighRes":
+		return True
+	else:
+		return False
+	
+def getFileMask(source,system,body,cmdr):
+	#This will be updated to allow different file mask formats
+	#selected from teh front end
+	
+	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
+	
+	bodyid=body.replace(system,'')
+	
+	
+	mask=this.mask.get()
+	mask=mask.replace('SYSTEM',system)
+	mask=mask.replace('BODY',bodyid)
+	mask=mask.replace('CMDR',cmdr)
+	mask=mask.replace('NNNNN',sequencemask)
+	#mask=system+'('+body+')_'+sequencemask+'.png' 	
+	
+	# We want to distinguish high res could make this optional
+	if isHighRes(source):
+		mask='HighRes_'+mask
+	
+	return mask
+
+def getFilename(source,system,body,cmdr):
+	dir = getOutputDir(system)
+	debug("Output Directory: "+dir)
+	mask = getFileMask(source,system,body,cmdr)
+	debug("Output Mask: "+mask)
+	
+	files = glob.glob(dir+'/'+mask)
+	
+	
+	# This is not very elegant. Is there a better way?
+	# counting won't work if there ar gaps in the sequence because of deletions
 	n = []
 	for elem in files:
-		try:
+		try:  
 			n.append(int(elem[-9:-4]))
+			debug("elem: "+elem)
 		except:
 			debug(elem)
 		
@@ -109,8 +298,18 @@ def get_sq(entry):
 		n = [0]
 			
 	
-	sequence = int(max(n))+1
-	return format(sequence, "05d")
+	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
+	sequence = format(int(max(n))+1, "05d")
+	
+	fname = dir+'/'+mask.replace(sequencemask,sequence)
+	debug("getFileMask: "+fname)
+	
+	return fname
+	
+def getBmpPath(source):
+    # remove the ED Screenshot part of the name
+	bmpfile=source[13:]
+	return this.bmp_loc.get()+"\\"+bmpfile
 	
 def make_sure_path_exists(path):
     try:
@@ -119,58 +318,170 @@ def make_sure_path_exists(path):
         if exception.errno != errno.EEXIST:
             raise
 	
+def thumbnail(img,size,xy):
+	temp= img.copy()
+
+	if xy == "x":
+		newwidth = size
+		newheight = newwidth * (float(temp.size[0])/float(temp.size[1]))
+	else:
+		newheight = size
+		newwidth = size * (float(temp.size[0])/float(temp.size[1]))
+		
+	
+	resize = newwidth, newheight
+	
+	temp.thumbnail(resize, Image.ANTIALIAS)
+	
+	cbuf= StringIO.StringIO()
+	temp.save(cbuf, format= 'GIF')
+	return cbuf.getvalue()	
+	
+def getGuiFocus():
+	status=os.path.expandvars("%userprofile%\Saved Games\Frontier Developments\Elite Dangerous\status.json")
+	debug(status)
+	with open(status) as json_file:  
+		data = json.load(json_file)
+	debug(data["GuiFocus"])
+	return data["GuiFocus"]
+	
+def save_screenshot(event):
+	if this.crop_status:
+		this.im.save(this.converted,"PNG");
+		this.status['text'] = "Full Screen Saved"
+	
+def save_crop(event):
+	if this.crop_status:
+		this.crop.save(this.converted,"PNG");
+		this.status['text'] = "Crop Saved"
 	
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
-
-    if entry['event'] == 'Screenshot':
-		this.status['text'] = 'processing...'	
-		## get the numeric component from the filename	
-		seq = get_sq(entry)
+	# when the outomation is on we need to raise the key
+	if this.timer.get() == "1":
+		key.ReleaseKey(VK_LEFTALT) 
+	key.ReleaseKey(VK_F10)
+	
+	display()
+	
+	if entry['event'] == 'Screenshot':
+	
+		this.processing = True
+		#we can set status to error because it wont be shown unless we fail
+		this.status['text'] = 'error'	
+		focus=getGuiFocus()
+		
+		original = getBmpPath(entry['Filename'])
+		converted = getFilename(entry['Filename'][13:],entry['System'],entry['Body'],cmdr)
+		this.converted=converted
+		
+		#open the image and save it as PNG
+		this.im = Image.open(original)
+		this.im.save(converted,"PNG");
+		
+		#create a thumbnail
+		this._IMG_THUMB = tk.PhotoImage(data=thumbnail(this.im,75,"y"))
+		this.screenshot["image"]=this._IMG_THUMB
+		this.screenshot.grid()
 			
-		## get the filename
-		#f = re.compile('[HighRes|Screen.hot].*_\d+.bmp')
-		#bmpfile=f.search(entry['Filename']).group();
 		
-		#take /ED Pictures/ off the front of the name
-		bmpfile=entry['Filename'][13:]
-		
-		debug("filename "+entry['Filename'])
-		debug("filename "+bmpfile)
-		debug(bmpfile[0:7])
-		
-		if bmpfile[0:7] == "HighRes":
-			prefix="HighRes_"
+		crop = True
+		if focus == TARGET_PANEL:
+			debug("TARGET")
+			this.crop= this.im.crop((850,279,1306,538))
+		elif focus == COMMS_PANEL:
+			this.crop= this.im.crop((406,123,919,832))
+		elif focus == ROLE_PANEL:
+			this.crop= this.im.crop((451,270,1460,837))
+		elif focus == SYSTEMS_PANEL:
+			this.crop= this.im.crop((451,270,1460,837))	
 		else:
-			prefix=""
+			crop = False
 		
-		## Construct the new filename		
-		pngfile=prefix+entry['System']+"("+entry['Body']+")_"+seq+".png"
-		
-		mkdir = tk.StringVar(value=config.get("Mkdir")).get()
-		print mkdir
-		
-		original = tk.StringVar(value=config.get("BMP")).get() + '\\'+ bmpfile
-		
-		newdir = tk.StringVar(value=config.get("PNG")).get() + '\\'+ system
-		
-		if mkdir == "1":
-			print "With dir " + mkdir
-			make_sure_path_exists(newdir)
-			converted = newdir + '\\'+ pngfile
-			print converted
+		if crop and not isHighRes(entry['Filename'][13:]):
+			this.crop_status=True;
+			debug("Cropping")
+			this._IMG_CROP = tk.PhotoImage(data=thumbnail(this.crop,75,"y"))
+			this.cropped["image"]=this._IMG_CROP
+			this.cropped.grid()
 		else:	
-			print "Without dir " + mkdir
-			converted = tk.StringVar(value=config.get("PNG")).get() + '\\'+ pngfile
-			print converted
-			
-		im = Image.open(original)
-		im.save(converted,"PNG");
+			this.crop_status = False
+			this.cropped.grid_remove()
 		
-		delete_original = tk.StringVar(value=config.get("DelOrg")).get()
-				
-				
-		if delete_original:
+			
+		
+		if this.delete_org.get() == "1":
 			os.remove(original)
 		
-		this.status['text'] = pngfile
+		this.processing = False		
+		this.status['text'] = os.path.basename(converted)
+		this.status["url"]=None
+
+def sendKeyPress():
+	if game_running():
+		running=True
+	
+	if this.processing:
+		this.status['text'] = "Processing Screenshot"		
+	
+	if EliteInForeground() and this.timex['text'] == "True" and this.processing == False:
+		if this.timer.get() == "1":
+			key.PressKey(VK_LEFTALT) 
+			key.PressKey(VK_F10) 
+		else:
+			key.PressKey(VK_F10) 
+	elif EliteInForeground() == False and this.timex['text'] == "True":
+		this.status['text'] = "Automation Suspended"
+	elif this.processing == True and this.timex['text'] == "True":	
+		this.status['text'] = "Processing"
+	
+		
+	
+		
+	
+		
+	this.parent.after(1000,sendKeyPress)
+
+	
+
+def GetWindowName(h):
+	b = ctypes.create_unicode_buffer(255)
+	GetWindowText(h,b,255)
+	return b.value
+
+def game_running():
+
+	if platform == 'darwin':
+		for app in NSWorkspace.sharedWorkspace().runningApplications():
+			if app.bundleIdentifier() == 'uk.co.frontier.EliteDangerous':
+				return True
+	elif platform == 'win32':
+
+		def WindowTitle(h):
+			if h:
+				l = GetWindowTextLength(h) + 1
+				buf = ctypes.create_unicode_buffer(l)
+				if GetWindowText(h, buf, l):
+					return buf.value
+				return None
+				
+		def callback(hWnd, lParam):
+			name = WindowTitle(hWnd)
+			if name and name.startswith('Elite - Dangerous'):
+				handle = GetProcessHandleFromHwnd(hWnd)
+				if handle:	# If GetProcessHandleFromHwnd succeeds then the app is already running as this user
+					CloseHandle(handle)
+					this.game=hWnd
+					return False	# stop enumeration
+			return True
+
+		return not EnumWindows(EnumWindowsProc(callback), 0)
+
+	return False
+		
+def EliteInForeground():
+	active = GetForegroundWindow()
+	name = GetWindowName(active)
+	if name and name.startswith('Elite - Dangerous'):
+		return True
+	return False
