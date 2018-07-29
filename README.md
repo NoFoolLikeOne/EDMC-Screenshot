@@ -5,8 +5,10 @@ A plugin for EDMC that detects screenshot events are converts them to PNG format
 *The converted file can be saved to a different directory or drive from the orginal file. 
 *The original file can optionally be deleted after conversion
 *The plugin can trigger screenshots on a timer
-*Displays the image and allow the user to save a preset crop
+*Displays the image and a preset crop
+*Click on the crop so save the crop
 
+![Screenshot](example.png)
 
 # Installation
 Download the [latest release](https://github.com/NoFoolLikeOne/EDMC-Screenshot/releases), open the archive (zip) and extract the folder  to your EDMC plugin folder.
