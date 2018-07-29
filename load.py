@@ -76,6 +76,14 @@ def plugin_start():
 	this.hideui = tk.StringVar(value=config.get("HideUI"))
 	this.timer  = tk.StringVar(value=config.get("Timer"))
 	this.vdebug  = tk.StringVar(value=config.get("Debug"))
+	
+	if config.get("Mask"):
+		this.mask = tk.StringVar(value=config.get("Mask"))
+	else:
+		the.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.jpg")
+		
+	debug("plugin_start"+this.mask.get());
+	
 	debug("plugin_start");
 	return "Screenshot"
 
@@ -90,6 +98,9 @@ def prefs_changed():
 	config.set("HideUI", this.hideui.get())
 	config.set("Timer", this.timer.get())
 	config.set("Debug", this.vdebug.get())
+	config.set("Mask", this.maskVar.get())
+	debug("PREF: "+this.mask.get())
+	debug("PREF: "+this.mask.get())
 	debug_settings()
 	display()
 	
@@ -114,25 +125,46 @@ def plugin_prefs(parent,cmdr,is_beta):
 	bmp_label.grid(padx=10, row=0,column=0, sticky=tk.W)
 
 	bmp_entry = nb.Entry(frame, textvariable=this.bmp_loc)
-	bmp_entry.grid(padx=10, row=0, column=2,columnspan=2, sticky=tk.EW)
+	bmp_entry.grid(padx=10, row=0, column=1,columnspan=2, sticky=tk.W)
 
 	png_label = nb.Label(frame, text="Conversion Directory")
 	png_label.grid(padx=10, row=1, column=0, sticky=tk.W)
 
 	png_entry = nb.Entry(frame, textvariable=this.png_loc)
-	png_entry.grid(padx=10, row=1, column=2,columnspan=2, sticky=tk.EW)
+	png_entry.grid(padx=10, row=1, column=1,columnspan=2, sticky=tk.W)
 
-	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=6, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.W)
+	
+	
+	Masks = [
+			"SYSTEM(BODY)_NNNNN.png",
+			"SYSTEM(CMDR)_NNNNN.png",
+			"BODY(CMDR)_NNNNN.png",
+			"SYSTEM_(BODY)_CMDR_NNNNN.png"
+	]
+		
+	this.maskVar = tk.StringVar(frame)
+	if this.mask.get():
+		this.maskVar.set(this.mask.get()) # default value
+	else:	
+		this.maskVar.set(Masks[0])
+
+	popLabel = nb.Label(frame, text="File Mask")
+	popupTypes = tk.OptionMenu(frame, this.maskVar, *Masks)
+	maskVar.trace('w', change_mask)
+	popupTypes.grid(row = 6, column = 1, columnspan=2, sticky=tk.W)
+	popLabel.grid(padx=10,row = 6, column = 0, sticky=tk.W)
+	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=7, column=0, sticky=tk.EW)
 	
 	
 	
 	return frame
 
-
+def change_mask(*args):
+	this.mask.set(this.maskVar.get())
 	
 def plugin_app(parent):
 	debug("plugin_app");
@@ -206,8 +238,15 @@ def getFileMask(source,system,body,cmdr):
 	
 	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
 	
+	bodyid=body.replace(system,'')
 	
-	mask=system+'('+body+')_'+sequencemask+'.png' 	
+	
+	mask=this.mask.get()
+	mask=mask.replace('SYSTEM',system)
+	mask=mask.replace('BODY',bodyid)
+	mask=mask.replace('CMDR',cmdr)
+	mask=mask.replace('NNNNN',sequencemask)
+	#mask=system+'('+body+')_'+sequencemask+'.png' 	
 	
 	# We want to distinguish high res could make this optional
 	if isHighRes(source):
@@ -373,8 +412,7 @@ def sendKeyPress():
 		this.status['text'] = "Automation Suspended"
 	elif this.processing == True and this.timex['text'] == "True":	
 		this.status['text'] = "Processing"
-	else:
-		this.status['text'] = "Ready"
+	
 		
 	
 		
