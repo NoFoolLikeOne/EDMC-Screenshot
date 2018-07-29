@@ -29,8 +29,11 @@ from config import config
 import ctypes
 from ctypes.wintypes import *
 from sys import platform
+import key
 
 VK_F10 = 0x79
+VK_LEFTALT = 0xA4
+VK_F11 = 0x7A
 WM_KEYDOWN = 0x0100
 
 EnumWindows            = ctypes.windll.user32.EnumWindows
@@ -122,7 +125,7 @@ def plugin_prefs(parent,cmdr,is_beta):
 	nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.EW)
 	nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.EW)
 	nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.EW)
-	nb.Checkbutton(frame, text="Hide the timed capture button", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.EW)
+	nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.EW)
 	nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=6, column=0, sticky=tk.EW)
 	
 	
@@ -135,11 +138,19 @@ def plugin_app(parent):
 	debug("plugin_app");
 	this.parent = parent
 	this.container = tk.Frame(parent)
-	this.container.columnconfigure(2, weight=1)
+	this.container.columnconfigure(3, weight=1)
 	this.label = tk.Label(this.container, text="Screenshot:")
 	this.status = tk.Label(this.container, anchor=tk.W, text="Ready")
+	this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = io_LEDRedOn), anchor=tk.W)
+	io_LEDRedOn=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_enabled.gif")
+	io_LEDRedOff=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_disabled.gif")
+	this.timex.config(text = "False", image=io_LEDRedOff)
+	this.timex.grid(padx=10, row=0,column=2, sticky=tk.E)
+
+	
+	
 	this.images = tk.Frame(this.container)
-	this.images.grid(row=1,column=0,columnspan=2,sticky=tk.W)
+	this.images.grid(row=1,column=0,columnspan=3,sticky=tk.W)
 	this.images.columnconfigure(2, weight=1)
 	
 	this.screenshot = tk.Label(this.images, anchor=tk.W)
@@ -154,6 +165,9 @@ def plugin_app(parent):
 	this.status.grid(padx=10, row=0,column=1, sticky=tk.W)
 	debug_settings()
 	display()
+	this.processing=False
+	this.parent.after(1000,sendKeyPress)
+	
 	return (this.container)
 
 
@@ -283,10 +297,16 @@ def save_crop(event):
 	
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
+	# when the outomation is on we need to raise the key
+	if this.timer.get() == "1":
+		key.ReleaseKey(VK_LEFTALT) 
+	key.ReleaseKey(VK_F10)
 	
 	display()
 	
 	if entry['event'] == 'Screenshot':
+	
+		this.processing = True
 		#we can set status to error because it wont be shown unless we fail
 		this.status['text'] = 'error'	
 		focus=getGuiFocus()
@@ -333,20 +353,34 @@ def journal_entry(cmdr, system, station, entry):
 		if this.delete_org.get() == "1":
 			os.remove(original)
 		
-				
+		this.processing = False		
 		this.status['text'] = os.path.basename(converted)
 
-def sendKyePress():
+def sendKeyPress():
 	if game_running():
 		running=True
 	
-	if EliteInForeground():
-		this.status['text'] = "Transponder Active"		
-		#key.PressKey(VK_F10)
-		#sendKeyDown(this.game,VK_F10)
+	if this.processing:
+		this.status['text'] = "Processing Screenshot"		
+	
+	if EliteInForeground() and this.timex['text'] == "True" and this.processing == False:
+		if this.timer.get() == "1":
+			key.PressKey(VK_LEFTALT) 
+			key.PressKey(VK_F10) 
+		else:
+			key.PressKey(VK_F10) 
+	elif EliteInForeground() == False and this.timex['text'] == "True":
+		this.status['text'] = "Automation Suspended"
+	elif this.processing == True and this.timex['text'] == "True":	
+		this.status['text'] = "Processing"
 	else:
-		this.status['text'] = "Transponder Suspended"
-		this.parent.after(1000,transponder)
+		this.status['text'] = "Ready"
+		
+	
+		
+	
+		
+	this.parent.after(1000,sendKeyPress)
 
 	
 
