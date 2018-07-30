@@ -1,12 +1,12 @@
 # EDMC-Screenshot
 A plugin for EDMC that detects screenshot events are converts them to PNG format
 
-*The plugin takes the existing screenshot file and generate a new name based on the selected mask
-*The converted file can be saved to a different directory or drive from the orginal file. 
-*The original file can optionally be deleted after conversion
-*The plugin can trigger screenshots on a timer
-*Displays the image and a preset crop
-*Click on the crop so save the crop
+* The plugin takes the existing screenshot file and generate a new name based on the selected mask
+* The converted file can be saved to a different directory or drive from the orginal file. 
+* The original file can optionally be deleted after conversion
+* The plugin can trigger screenshots on a timer
+* Displays the image and a preset crop
+* Click on the crop so save the crop
 
 ![Screenshot](example.png)
 
