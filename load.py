@@ -60,7 +60,7 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.version="3.0.0"
+this.version="3.0.1"
 this.version_url="https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
 
 
@@ -189,7 +189,8 @@ def change_mask(*args):
 def plugin_app(parent):
 	debug("plugin_app");
 	this.parent = parent
-	this.container = tk.Frame(parent)
+	this.pcont=tk.Frame(parent)
+	this.container = tk.Frame(pcont)
 	this.container.columnconfigure(3, weight=1)
 	this.label = tk.Label(this.container, text="Screenshot:")
 	this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
@@ -221,7 +222,7 @@ def plugin_app(parent):
 	this.processing=False
 	this.parent.after(1000,sendKeyPress)
 	
-	return (this.container)
+	return (this.pcont)
 
 
 def display():
