@@ -433,7 +433,10 @@ def journal_entry(cmdr, system, station, entry):
 			os.remove(original)
 		
 		this.processing = False		
-		this.status['text'] = os.path.basename(converted)
+		if len(os.path.basename(converted)) > 30:
+			this.status['text'] = os.path.basename(converted)[0:30]+"..."
+		else:
+			this.status['text'] = os.path.basename(converted)
 		this.status["url"]=None
 
 def sendKeyPress():
