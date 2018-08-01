@@ -95,7 +95,7 @@ def plugin_start():
 	this.hideui = tk.StringVar(value=config.get("HideUI"))
 	this.timer  = tk.StringVar(value=config.get("Timer"))
 	this.vdebug  = tk.StringVar(value=config.get("Debug"))
-	
+	this.gamemode = "None"
 	if config.get("Mask"):
 		this.mask = tk.StringVar(value=config.get("Mask"))
 	else:
@@ -242,7 +242,7 @@ def getInputDir():
 def getOutputDir(system):
 	debug("eh"+this.png_loc.get())
 		
-	if this.mkdir.get() == "1":
+	if this.mkdir.get() == "1" and system:
 		make_sure_path_exists(this.png_loc.get()+'/'+system)
 		return this.png_loc.get()+'/'+system
 	else:
@@ -260,12 +260,16 @@ def getFileMask(source,system,body,cmdr):
 	
 	sequencemask="[0123456789][0123456789][0123456789][0123456789][0123456789]"
 	
-	bodyid=body.replace(system,'')
 	
 	
 	mask=this.mask.get()
-	mask=mask.replace('SYSTEM',system)
-	mask=mask.replace('BODY',bodyid)
+	if system:
+		bodyid=body.replace(system,'')
+		mask=mask.replace('SYSTEM',system)
+		mask=mask.replace('BODY',bodyid)
+	else:
+		mask=mask.replace('SYSTEM','Unknown')
+		mask=mask.replace('BODY','Unknown')
 	mask=mask.replace('CMDR',cmdr)
 	mask=mask.replace('NNNNN',sequencemask)
 	#mask=system+'('+body+')_'+sequencemask+'.png' 	
@@ -343,8 +347,11 @@ def getGuiFocus():
 	debug(status)
 	with open(status) as json_file:  
 		data = json.load(json_file)
-	debug(data["GuiFocus"])
-	return data["GuiFocus"]
+	try:
+		debug(data["GuiFocus"])
+		return data["GuiFocus"]
+	except:
+		return
 	
 def save_screenshot(event):
 	if this.crop_status:
@@ -359,21 +366,29 @@ def save_crop(event):
 # Detect journal events
 def journal_entry(cmdr, system, station, entry):
 	# when the outomation is on we need to raise the key
-	if this.timer.get() == "1":
+	if this.timer.get() == "1" and this.gamemode == "Solo":
 		key.ReleaseKey(VK_LEFTALT) 
 	key.ReleaseKey(VK_F10)
 	
 	display()
 	
-	if entry['event'] == 'Screenshot':
+	if entry['event'] == 'LoadGame':
+		this.gamemode = entry["GameMode"]
 	
+	if entry['event'] == 'Screenshot':
+					
+		if "Body" in entry:
+			body = entry['Body']
+		else:
+			body = station
+			
 		this.processing = True
 		#we can set status to error because it wont be shown unless we fail
 		this.status['text'] = 'error'	
 		focus=getGuiFocus()
 		
 		original = getBmpPath(entry['Filename'])
-		converted = getFilename(entry['Filename'][13:],entry['System'],entry['Body'],cmdr)
+		converted = getFilename(entry['Filename'][13:],system,body,cmdr)
 		this.converted=converted
 		
 		#open the image and save it as PNG
@@ -427,7 +442,8 @@ def sendKeyPress():
 	
 	if EliteInForeground() and this.timex['text'] == "True" and this.processing == False:
 		if this.timer.get() == "1":
-			key.PressKey(VK_LEFTALT) 
+			if this.gamemode == "Solo":
+				key.PressKey(VK_LEFTALT) 
 			key.PressKey(VK_F10) 
 		else:
 			key.PressKey(VK_F10) 
