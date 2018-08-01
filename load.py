@@ -263,10 +263,13 @@ def getFileMask(source,system,body,cmdr):
 	
 	
 	mask=this.mask.get()
-	if system:
+	if system and body:
 		bodyid=body.replace(system,'')
 		mask=mask.replace('SYSTEM',system)
 		mask=mask.replace('BODY',bodyid)
+	elif system and not body:
+		mask=mask.replace('SYSTEM',system)
+		mask=mask.replace('BODY','Unknown')
 	else:
 		mask=mask.replace('SYSTEM','Unknown')
 		mask=mask.replace('BODY','Unknown')
