@@ -195,9 +195,9 @@ def plugin_app(parent):
 	this.label = tk.Label(this.container, text="Screenshot:")
 	this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
 	this.status["url"]=this.status_url
-	this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = io_LEDRedOn), anchor=tk.W)
-	io_LEDRedOn=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_enabled.gif")
-	io_LEDRedOff=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_disabled.gif")
+	this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = this.io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = this.io_LEDRedOn), anchor=tk.W)
+	this.io_LEDRedOn=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_enabled.gif")
+	this.io_LEDRedOff=tk.PhotoImage(file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))+"\\icons\\timer_disabled.gif")
 	this.timex.config(text = "False", image=io_LEDRedOff)
 	this.timex.grid(padx=10, row=0,column=2, sticky=tk.E)
 
@@ -377,6 +377,11 @@ def journal_entry(cmdr, system, station, entry):
 	
 	if entry['event'] == 'LoadGame':
 		this.gamemode = entry["GameMode"]
+	
+	if entry['event'] == 'ShutDown' or entry['event'] == 'Died':
+		this.timex.config(text="False", image = this.io_LEDRedOff)
+		this.status['text'] = 'Timer Stopped'
+		debug("stopping Timer")
 	
 	if entry['event'] == 'Screenshot':
 					
