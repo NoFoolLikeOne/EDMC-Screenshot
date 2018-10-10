@@ -12,6 +12,7 @@ import ctypes
 import json
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
+from config import config
 
 from PIL import Image
 
@@ -346,15 +347,16 @@ def thumbnail(img,size,xy):
 	return cbuf.getvalue()	
 	
 def getGuiFocus():
-	status=os.path.expandvars("%userprofile%\Saved Games\Frontier Developments\Elite Dangerous\status.json")
-	debug(status)
-	with open(status) as json_file:  
-		data = json.load(json_file)
-	try:
-		debug(data["GuiFocus"])
-		return data["GuiFocus"]
-	except:
-		return
+    
+    status="{}\status.json".format(config.default_journal_dir )
+    debug(status)
+    with open(status) as json_file:  
+        data = json.load(json_file)
+    try:
+        debug(data["GuiFocus"])
+        return data["GuiFocus"]
+    except:
+        return
 	
 def save_screenshot(event):
 	if this.crop_status:
