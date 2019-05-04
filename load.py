@@ -101,7 +101,7 @@ def plugin_start():
     if config.get("Mask"):
         this.mask = tk.StringVar(value=config.get("Mask"))
     else:
-        this.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.jpg")
+        this.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.png")
         
     debug("plugin_start"+this.mask.get());
     checkVersion()
