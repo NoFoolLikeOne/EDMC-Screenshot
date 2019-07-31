@@ -16,6 +16,10 @@ from config import config
 
 from PIL import Image
 
+import l10n
+import functools
+_ = functools.partial(l10n.Translations.translate, context=__file__)
+
 TARGET_PANEL=2
 COMMS_PANEL=3
 ROLE_PANEL=4
@@ -157,18 +161,18 @@ def plugin_prefs(parent,cmdr,is_beta):
     png_entry = nb.Entry(frame, textvariable=this.png_loc)
     png_entry.grid(padx=10, row=1, column=1,columnspan=2, sticky=tk.W)
 
-    nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Take screenshot when scanning a Thargoid", variable=this.scanshot).grid(padx=10, row=5, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Delete Original File"), variable=this.delete_org).grid(padx=10, row=2, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Group files by system directory"), variable=this.mkdir).grid(padx=10, row=3, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Hide The User Interface"), variable=this.hideui).grid(padx=10, row=4, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Take high resolution shots on the timer"), variable=this.timer).grid(padx=10, row=5, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Take screenshot when scanning a Thargoid"), variable=this.scanshot).grid(padx=10, row=5, column=0, sticky=tk.W)
     
     
     Masks = [
-            "SYSTEM(BODY)_NNNNN.png",
-            "SYSTEM(CMDR)_NNNNN.png",
-            "BODY(CMDR)_NNNNN.png",
-            "SYSTEM_(BODY)_CMDR_NNNNN.png"
+            _("SYSTEM(BODY)_NNNNN.png"),
+            _("SYSTEM(CMDR)_NNNNN.png"),
+            _("BODY(CMDR)_NNNNN.png"),
+            _("SYSTEM_(BODY)_CMDR_NNNNN.png")
     ]
         
     this.maskVar = tk.StringVar(frame)
@@ -182,7 +186,7 @@ def plugin_prefs(parent,cmdr,is_beta):
     maskVar.trace('w', change_mask)
     popupTypes.grid(row = 6, column = 1, columnspan=2, sticky=tk.W)
     popLabel.grid(padx=10,row = 6, column = 0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=7, column=0, sticky=tk.EW)
+    nb.Checkbutton(frame, text=_("Enable Debugging"), variable=this.vdebug).grid(padx=10, row=7, column=0, sticky=tk.EW)
     
     
     
@@ -197,7 +201,7 @@ def plugin_app(parent):
     this.pcont=tk.Frame(parent)
     this.container = tk.Frame(pcont)
     this.container.columnconfigure(3, weight=1)
-    this.label = tk.Label(this.container, text="Screenshot:")
+    this.label = tk.Label(this.container, text=_("Screenshot:"))
     this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
     this.status["url"]=this.status_url
     this.timex=tk.Button(this.container, command = lambda: this.timex.config(text="False", image = this.io_LEDRedOff) if this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image = this.io_LEDRedOn), anchor=tk.W)
@@ -413,7 +417,7 @@ def journal_entry(cmdr, system, station, entry):
             
         this.processing = True
         #we can set status to error because it wont be shown unless we fail
-        this.status['text'] = 'error'   
+        this.status['text'] = _('error')   
         focus=getGuiFocus()
         
         original = getBmpPath(entry['Filename'])
@@ -483,7 +487,7 @@ def sendKeyPress():
         running=True
     
     if this.processing:
-        this.status['text'] = "Processing Screenshot"       
+        this.status['text'] = _("Processing Screenshot")       
     
     if EliteInForeground() and this.timex['text'] == "True" and this.processing == False:
         if this.timer.get() == "1":
@@ -493,9 +497,9 @@ def sendKeyPress():
         else:
             key.PressKey(VK_F10) 
     elif EliteInForeground() == False and this.timex['text'] == "True":
-        this.status['text'] = "Automation Suspended"
+        this.status['text'] = _("Automation Suspended")
     elif this.processing == True and this.timex['text'] == "True":  
-        this.status['text'] = "Processing"
+        this.status['text'] = _("Processing")
     
         
     
