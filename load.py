@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import StringIO
 import Tkinter as tk
+import collections
 import ctypes
 import errno
 import glob
@@ -55,6 +56,8 @@ this.prep = {}
 
 this.version = "3.1.2"
 this.version_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
+
+this.delete_queue = collections.deque()
 
 
 def checkVersion():
@@ -306,7 +309,6 @@ def getFilename(source, system, body, cmdr):
     for elem in files:
         try:
             n.append(int(elem[-9:-4]))
-            debug("elem: " + elem)
         except:
             debug(elem)
 
@@ -471,7 +473,13 @@ def journal_entry(cmdr, system, station, entry):
             this.cropped.grid_remove()
 
         if this.delete_org.get() == "1":
-            os.remove(original)
+            # append to the delete_queue
+            # set a timer to delete it in 30 seconds
+            # this will let other plugins work with this one
+            grace_period = 1000 * 60
+            debug("delete in {} seconds {}".format(grace_period / 1000, original))
+            this.delete_queue.append(original)
+            this.parent.after(grace_period, delete_first)
 
         this.processing = False
         if len(os.path.basename(converted)) > 30:
@@ -479,6 +487,12 @@ def journal_entry(cmdr, system, station, entry):
         else:
             this.status['text'] = os.path.basename(converted)
         this.status["url"] = None
+
+
+def delete_first():
+    original = this.delete_queue.popleft()
+    debug("deleting {}".format(original))
+    os.remove(original)
 
 
 def sendKeyPress():
