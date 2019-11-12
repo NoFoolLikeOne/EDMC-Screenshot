@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import StringIO
-import Tkinter as tk
+import io
+import tkinter as tk
 import collections
 import ctypes
 import errno
@@ -10,7 +10,7 @@ import os
 import re
 import requests
 import sys
-import ttk
+import tkinter.ttk
 from PIL import Image
 from config import config
 from ctypes.wintypes import *
@@ -64,7 +64,7 @@ def checkVersion():
     versions = requests.get(this.version_url)
 
     getnews = True
-    for line in versions.content.split("\r\n"):
+    for line in versions.content.decode("ascii").split("\r\n"):
         rec = line.split("\t")
         if rec[0] == 'EDMC-Screenshot':
             this.status_url = rec[2]
@@ -76,10 +76,10 @@ def checkVersion():
 
 def debug(d):
     if this.vdebug.get() == "1":
-        print '[Screenshot] ' + str(d)
+        print(('[Screenshot] ' + str(d)))
 
 
-def plugin_start():
+def plugin_start3(plugin_dir):
     """
     Load Screenshot plugin into EDMC
     """
@@ -125,14 +125,14 @@ def prefs_changed():
 def debug_settings():
     debug("debug_settings");
     if this.vdebug.get() == "1":
-        print "Source Directory " + this.bmp_loc.get()
-        print "Target Directory " + this.png_loc.get()
-        print "Delete Originals " + this.delete_org.get()
-        print "Make System Directory " + this.mkdir.get()
-        print "HideUI " + this.hideui.get()
-        print "Timer " + this.timer.get()
-        print "Scanshot " + this.scanshot.get()
-        print "Debug " + this.vdebug.get()
+        print(("Source Directory " + this.bmp_loc.get()))
+        print(("Target Directory " + this.png_loc.get()))
+        print(("Delete Originals " + this.delete_org.get()))
+        print(("Make System Directory " + this.mkdir.get()))
+        print(("HideUI " + this.hideui.get()))
+        print(("Timer " + this.timer.get()))
+        print(("Scanshot " + this.scanshot.get()))
+        print(("Debug " + this.vdebug.get()))
 
 
 def plugin_prefs(parent, cmdr, is_beta):
@@ -352,7 +352,7 @@ def thumbnail(img, size, xy):
 
     temp.thumbnail(resize, Image.ANTIALIAS)
 
-    cbuf = StringIO.StringIO()
+    cbuf = io.StringIO()
     temp.save(cbuf, format='GIF')
     return cbuf.getvalue()
 

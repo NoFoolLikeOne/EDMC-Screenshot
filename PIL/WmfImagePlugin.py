@@ -22,14 +22,16 @@
 from __future__ import print_function
 
 from . import Image, ImageFile
-from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
+from ._binary import i16le as word, i32le as dword, si16le as short, si32le as _long
+from ._util import py3
 
-
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 _handler = None
 
-if str != bytes:
+if py3:
     long = int
 
 
@@ -42,11 +44,11 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
     class WmfHandler(object):
-
         def open(self, im):
             im.mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
@@ -54,10 +56,14 @@ if hasattr(Image.core, "drawwmf"):
         def load(self, im):
             im.fp.seek(0)  # rewind
             return Image.frombytes(
-                "RGB", im.size,
+                "RGB",
+                im.size,
                 Image.core.drawwmf(im.fp.read(), im.size, self.bbox),
-                "raw", "BGR", (im.size[0]*3 + 3) & -4, -1
-                )
+                "raw",
+                "BGR",
+                (im.size[0] * 3 + 3) & -4,
+                -1,
+            )
 
     register_handler(WmfHandler())
 
@@ -68,13 +74,13 @@ if hasattr(Image.core, "drawwmf"):
 
 def _accept(prefix):
     return (
-        prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or
-        prefix[:4] == b"\x01\x00\x00\x00"
-        )
+        prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or prefix[:4] == b"\x01\x00\x00\x00"
+    )
 
 
 ##
 # Image plugin for Windows metafiles.
+
 
 class WmfStubImageFile(ImageFile.StubImageFile):
 
@@ -106,8 +112,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             self.info["dpi"] = 72
 
-            # print(self.mode, self.size, self.info)
-
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
                 raise SyntaxError("Unsupported WMF file format")
@@ -128,8 +132,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             size = x1 - x0, y1 - y0
 
             # calculate dots per inch from bbox and frame
-            xdpi = 2540 * (x1 - y0) // (frame[2] - frame[0])
-            ydpi = 2540 * (y1 - y0) // (frame[3] - frame[1])
+            xdpi = int(2540.0 * (x1 - y0) / (frame[2] - frame[0]) + 0.5)
+            ydpi = int(2540.0 * (y1 - y0) / (frame[3] - frame[1]) + 0.5)
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
 
@@ -142,7 +146,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             raise SyntaxError("Unsupported file format")
 
         self.mode = "RGB"
-        self.size = size
+        self._size = size
 
         loader = self._load()
         if loader:
@@ -153,16 +157,17 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im, fp, filename):
-    if _handler is None or not hasattr("_handler", "save"):
+    if _handler is None or not hasattr(_handler, "save"):
         raise IOError("WMF save handler not installed")
     _handler.save(im, fp, filename)
+
 
 #
 # --------------------------------------------------------------------
 # Registry stuff
 
+
 Image.register_open(WmfStubImageFile.format, WmfStubImageFile, _accept)
 Image.register_save(WmfStubImageFile.format, _save)
 
-Image.register_extension(WmfStubImageFile.format, ".wmf")
-Image.register_extension(WmfStubImageFile.format, ".emf")
+Image.register_extensions(WmfStubImageFile.format, [".wmf", ".emf"])

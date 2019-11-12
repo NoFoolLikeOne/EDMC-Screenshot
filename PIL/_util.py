@@ -1,17 +1,33 @@
 import os
+import sys
 
-if bytes is str:
-    def isStringType(t):
-        return isinstance(t, basestring)
+py3 = sys.version_info.major >= 3
+py36 = sys.version_info[0:2] >= (3, 6)
 
-    def isPath(f):
-        return isinstance(f, basestring)
-else:
+if py3:
+
     def isStringType(t):
         return isinstance(t, str)
 
+    if py36:
+        from pathlib import Path
+
+        def isPath(f):
+            return isinstance(f, (bytes, str, Path))
+
+    else:
+
+        def isPath(f):
+            return isinstance(f, (bytes, str))
+
+
+else:
+
+    def isStringType(t):
+        return isinstance(t, basestring)  # noqa: F821
+
     def isPath(f):
-        return isinstance(f, (bytes, str))
+        return isinstance(f, basestring)  # noqa: F821
 
 
 # Checks if an object is a string, and that it points to a directory.

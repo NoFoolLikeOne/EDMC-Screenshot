@@ -25,6 +25,8 @@ from . import Image
 from ._binary import i32le as i32
 from .PcxImagePlugin import PcxImageFile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
@@ -37,12 +39,13 @@ def _accept(prefix):
 ##
 # Image plugin for the Intel DCX format.
 
+
 class DcxImageFile(PcxImageFile):
 
     format = "DCX"
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
-    
+
     def _open(self):
 
         # Header
@@ -59,6 +62,7 @@ class DcxImageFile(PcxImageFile):
             self._offset.append(offset)
 
         self.__fp = self.fp
+        self.frame = None
         self.seek(0)
 
     @property
@@ -70,8 +74,8 @@ class DcxImageFile(PcxImageFile):
         return len(self._offset) > 1
 
     def seek(self, frame):
-        if frame >= len(self._offset):
-            raise EOFError("attempt to seek outside DCX directory")
+        if not self._seek_check(frame):
+            return
         self.frame = frame
         self.fp = self.__fp
         self.fp.seek(self._offset[frame])
@@ -79,6 +83,15 @@ class DcxImageFile(PcxImageFile):
 
     def tell(self):
         return self.frame
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 Image.register_open(DcxImageFile.format, DcxImageFile, _accept)

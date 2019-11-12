@@ -23,6 +23,7 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 # --------------------------------------------------------------------
 # Image adapter
 
@@ -50,7 +51,7 @@ class FITSStubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self.mode = "F"
-        self.size = 1, 1
+        self._size = 1, 1
 
         loader = self._load()
         if loader:
@@ -72,5 +73,4 @@ def _save(im, fp, filename):
 Image.register_open(FITSStubImageFile.format, FITSStubImageFile, _accept)
 Image.register_save(FITSStubImageFile.format, _save)
 
-Image.register_extension(FITSStubImageFile.format, ".fit")
-Image.register_extension(FITSStubImageFile.format, ".fits")
+Image.register_extensions(FITSStubImageFile.format, [".fit", ".fits"])

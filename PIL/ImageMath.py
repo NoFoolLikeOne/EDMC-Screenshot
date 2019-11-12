@@ -16,18 +16,20 @@
 #
 
 from . import Image, _imagingmath
+from ._util import py3
 
 try:
     import builtins
 except ImportError:
     import __builtin__
+
     builtins = __builtin__
 
 VERBOSE = 0
 
 
 def _isconstant(v):
-    return isinstance(v, int) or isinstance(v, float)
+    return isinstance(v, (int, float))
 
 
 class _Operand(object):
@@ -60,7 +62,7 @@ class _Operand(object):
             out = Image.new(mode or im1.mode, im1.size, None)
             im1.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError:
                 raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.unop(op, out.im.id, im1.im.id)
@@ -77,8 +79,7 @@ class _Operand(object):
                     raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
-                size = (min(im1.size[0], im2.size[0]),
-                        min(im1.size[1], im2.size[1]))
+                size = (min(im1.size[0], im2.size[0]), min(im1.size[1], im2.size[1]))
                 if im1.size != size:
                     im1 = im1.crop((0, 0) + size)
                 if im2.size != size:
@@ -89,7 +90,7 @@ class _Operand(object):
             im1.load()
             im2.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError:
                 raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
@@ -100,7 +101,7 @@ class _Operand(object):
         # an image is "true" if it contains at least one non-zero pixel
         return self.im.getbbox() is not None
 
-    if bytes is str:
+    if not py3:
         # Provide __nonzero__ for pre-Py3k
         __nonzero__ = __bool__
         del __bool__
@@ -151,7 +152,7 @@ class _Operand(object):
     def __rpow__(self, other):
         return self.apply("pow", other, self)
 
-    if bytes is str:
+    if not py3:
         # Provide __div__ and __rdiv__ for pre-Py3k
         __div__ = __truediv__
         __rdiv__ = __rtruediv__
@@ -234,6 +235,7 @@ def imagemath_max(self, other):
 
 def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
+
 
 ops = {}
 for k, v in list(globals().items()):
