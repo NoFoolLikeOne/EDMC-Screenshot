@@ -11,7 +11,7 @@ import re
 import requests
 import sys
 import tkinter.ttk
-from PIL import Image
+import PIL.Image 
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
