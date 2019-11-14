@@ -73,7 +73,10 @@ def checkVersion():
             else:
                 this.status_text = "Ready"
 
-
+import PIL
+from PIL import _imaging
+print(('[Screenshot] ' + str(PIL.__file__)))
+print(('[Screenshot] ' + str(_imaging.__file__)))
 def debug(d):
     if this.vdebug.get() == "1":
         print(('[Screenshot] ' + str(d)))
