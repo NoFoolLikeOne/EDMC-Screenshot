@@ -11,6 +11,12 @@ import re
 import requests
 import sys
 import tkinter.ttk
+
+import PIL
+from PIL import _imaging
+print(('[Screenshot] ' + str(PIL.__file__)))
+print(('[Screenshot] ' + str(_imaging.__file__)))
+
 import PIL.Image 
 from config import config
 from ctypes.wintypes import *
@@ -73,10 +79,7 @@ def checkVersion():
             else:
                 this.status_text = "Ready"
 
-import PIL
-from PIL import _imaging
-print(('[Screenshot] ' + str(PIL.__file__)))
-print(('[Screenshot] ' + str(_imaging.__file__)))
+
 def debug(d):
     if this.vdebug.get() == "1":
         print(('[Screenshot] ' + str(d)))
