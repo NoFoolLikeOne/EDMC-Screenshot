@@ -11,12 +11,6 @@ import re
 import requests
 import sys
 import tkinter.ttk
-
-import PIL
-from PIL import _imaging
-print(('[Screenshot] ' + str(PIL.__file__)))
-print(('[Screenshot] ' + str(_imaging.__file__)))
-
 import PIL.Image 
 from config import config
 from ctypes.wintypes import *
