@@ -382,7 +382,7 @@ def save_crop(event):
 
 
 # Detect journal events
-def journal_entry(cmdr, system, station, entry):
+def journal_entry(cmdr, is_beta, system, station, entry, state):
     # when the outomation is on we need to raise the key
     if this.timer.get() == "1" and this.gamemode == "Solo":
         key.ReleaseKey(VK_LEFTALT)
