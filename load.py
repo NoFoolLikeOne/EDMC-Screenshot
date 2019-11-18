@@ -105,7 +105,7 @@ def plugin_start3(plugin_dir):
 
 
 # Settings dialog dismissed
-def prefs_changed():
+def prefs_changed(cmdr, is_beta):
     debug("prefs_changed");
     config.set("BMP", this.bmp_loc.get())
     config.set("PNG", this.png_loc.get())
