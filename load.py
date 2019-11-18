@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import platform
+print(platform.platform())
 import io
 import tkinter as tk
 import collections
