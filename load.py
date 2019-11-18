@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import platform
-print(platform.platform())
 import io
 import tkinter as tk
 import collections
@@ -13,7 +11,7 @@ import re
 import requests
 import sys
 import tkinter.ttk
-import PIL.Image 
+from PIL import Image
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
