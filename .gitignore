@@ -20,3 +20,4 @@ PIL/TiffImagePlugin.pyo
 PIL/TiffTags.pyo
 *.sqlite
 /.git
+/.vs
