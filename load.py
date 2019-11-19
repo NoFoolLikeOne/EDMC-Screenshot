@@ -352,7 +352,7 @@ def thumbnail(img, size, xy):
 
     temp.thumbnail(resize, Image.ANTIALIAS)
 
-    cbuf = io.StringIO()
+    cbuf = io.BytesIO()
     temp.save(cbuf, format='GIF')
     return cbuf.getvalue()
 
