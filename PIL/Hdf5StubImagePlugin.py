@@ -27,6 +27,7 @@ def register_handler(handler):
 # --------------------------------------------------------------------
 # Image adapter
 
+
 def _accept(prefix):
     return prefix[:8] == b"\x89HDF\r\n\x1a\n"
 
@@ -47,7 +48,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self.mode = "F"
-        self.size = 1, 1
+        self._size = 1, 1
 
         loader = self._load()
         if loader:
@@ -69,5 +70,4 @@ def _save(im, fp, filename):
 Image.register_open(HDF5StubImageFile.format, HDF5StubImageFile, _accept)
 Image.register_save(HDF5StubImageFile.format, _save)
 
-Image.register_extension(HDF5StubImageFile.format, ".h5")
-Image.register_extension(HDF5StubImageFile.format, ".hdf")
+Image.register_extensions(HDF5StubImageFile.format, [".h5", ".hdf"])

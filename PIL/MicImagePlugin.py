@@ -17,10 +17,12 @@
 #
 
 
-from . import Image, TiffImagePlugin
-
 import olefile
 
+from . import Image, TiffImagePlugin
+
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -34,6 +36,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for Microsoft's Image Composer file format.
+
 
 class MicImageFile(TiffImagePlugin.TiffImageFile):
 
@@ -65,7 +68,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             raise SyntaxError("not an MIC file; no image entries")
 
         self.__fp = self.fp
-        self.frame = 0
+        self.frame = None
 
         if len(self.images) > 1:
             self.category = Image.CONTAINER
@@ -81,7 +84,8 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         return len(self.images) > 1
 
     def seek(self, frame):
-
+        if not self._seek_check(frame):
+            return
         try:
             filename = self.images[frame]
         except IndexError:
@@ -94,8 +98,16 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.frame = frame
 
     def tell(self):
-
         return self.frame
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 #

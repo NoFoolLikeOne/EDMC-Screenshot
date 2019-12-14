@@ -38,7 +38,6 @@ class Font(object):
 
 
 class Draw(object):
-
     def __init__(self, image, size=None, color=None):
         if not hasattr(image, "im"):
             image = Image.new(image, size, color)
@@ -97,9 +96,6 @@ class Draw(object):
 
     def rectangle(self, xy, *options):
         self.render("rectangle", xy, *options)
-
-    def symbol(self, xy, symbol, *options):
-        raise NotImplementedError("not in this version")
 
     def text(self, xy, text, font):
         if self.transform:

@@ -26,6 +26,7 @@ class HDC(object):
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods.
     """
+
     def __init__(self, dc):
         self.dc = dc
 
@@ -39,6 +40,7 @@ class HWND(object):
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods, instead of a DC.
     """
+
     def __init__(self, wnd):
         self.wnd = wnd
 
@@ -154,8 +156,9 @@ class Dib(object):
                    If the mode does not match, the image is converted to the
                    mode of the bitmap image.
         :param box: A 4-tuple defining the left, upper, right, and
-                    lower pixel coordinate.  If None is given instead of a
-                    tuple, all of the image is assumed.
+                    lower pixel coordinate.  See :ref:`coordinate-system`. If
+                    None is given instead of a tuple, all of the image is
+                    assumed.
         """
         im.load()
         if self.mode != im.mode:
@@ -189,7 +192,7 @@ class Window(object):
     def __init__(self, title="PIL", width=None, height=None):
         self.hwnd = Image.core.createwindow(
             title, self.__dispatcher, width or 0, height or 0
-            )
+        )
 
     def __dispatcher(self, action, *args):
         return getattr(self, "ui_handle_" + action)(*args)
