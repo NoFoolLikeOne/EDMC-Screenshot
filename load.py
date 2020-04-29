@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import io
-import tkinter as tk
+
 import collections
 import ctypes
 import errno
@@ -10,8 +10,16 @@ import os
 import re
 import requests
 import sys
-import tkinter.ttk
-from PIL import Image
+
+import sys
+if sys.hexversion >= 0x3000000:
+    from PIL3 import Image
+    import tkinter as tk
+    import tkinter.ttk
+else:
+    from PIL2 import Image
+    import Tkinter as tk
+    import ttk
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
@@ -79,8 +87,10 @@ def debug(d):
     if this.vdebug.get() == "1":
         print(('[Screenshot] ' + str(d)))
 
-
 def plugin_start3(plugin_dir):
+    return plugin_start(plugin_dir)
+
+def plugin_start(plugin_dir):
     """
     Load Screenshot plugin into EDMC
     """
