@@ -21,3 +21,4 @@ PIL/TiffTags.pyo
 *.sqlite
 /.git
 /.vs
+*.pyc
