@@ -22,3 +22,5 @@ PIL/TiffTags.pyo
 /.git
 /.vs
 /.vscode
+*.pyc
+
