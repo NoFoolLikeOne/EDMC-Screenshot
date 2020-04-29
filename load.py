@@ -15,6 +15,7 @@ from PIL import Image
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
+from datetime import datetime
 
 TARGET_PANEL = 2
 COMMS_PANEL = 3
@@ -167,9 +168,15 @@ def plugin_prefs(parent, cmdr, is_beta):
 
     Masks = [
         "SYSTEM(BODY)_NNNNN.png",
+        "SYSTEM(BODY)_DATE.png",
         "SYSTEM(CMDR)_NNNNN.png",
+        "SYSTEM(CMDR)_DATE.png",
         "BODY(CMDR)_NNNNN.png",
-        "SYSTEM_(BODY)_CMDR_NNNNN.png"
+        "BODY(CMDR)_DATE.png",
+        "SYSTEM_(BODY)_CMDR_NNNNN.png",
+        "SYSTEM_(BODY)_CMDR_DATE.png",
+        "SYSTEM BODY (CMDR) NNNNN.png",
+        "SYSTEM BODY (CMDR) DATE.png"
     ]
 
     this.maskVar = tk.StringVar(frame)
@@ -275,7 +282,7 @@ def getFileMask(source, system, body, cmdr):
 
     mask = this.mask.get()
     if system and body:
-        bodyid = body.replace(system, '')
+        bodyid = body.replace(system, '').strip()
         mask = mask.replace('SYSTEM', system)
         mask = mask.replace('BODY', bodyid)
     elif system and not body:
@@ -286,6 +293,8 @@ def getFileMask(source, system, body, cmdr):
         mask = mask.replace('BODY', 'Unknown')
     mask = mask.replace('CMDR', cmdr)
     mask = mask.replace('NNNNN', sequencemask)
+    mask = mask.replace('DATE', datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))
+
     # mask=system+'('+body+')_'+sequencemask+'.png'
 
     # We want to distinguish high res could make this optional
