@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import StringIO
-import Tkinter as tk
+import io
+
 import collections
 import ctypes
 import errno
@@ -10,11 +10,20 @@ import os
 import re
 import requests
 import sys
-import ttk
-from PIL import Image
+
+import sys
+if sys.hexversion >= 0x3000000:
+    from PIL3 import Image
+    import tkinter as tk
+    import tkinter.ttk
+else:
+    from PIL2 import Image
+    import Tkinter as tk
+    import ttk
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
+from datetime import datetime
 
 TARGET_PANEL = 2
 COMMS_PANEL = 3
@@ -64,7 +73,7 @@ def checkVersion():
     versions = requests.get(this.version_url)
 
     getnews = True
-    for line in versions.content.split("\r\n"):
+    for line in versions.content.decode("ascii").split("\r\n"):
         rec = line.split("\t")
         if rec[0] == 'EDMC-Screenshot':
             this.status_url = rec[2]
@@ -76,10 +85,12 @@ def checkVersion():
 
 def debug(d):
     if this.vdebug.get() == "1":
-        print '[Screenshot] ' + str(d)
+        print(('[Screenshot] ' + str(d)))
 
+def plugin_start3(plugin_dir):
+    return plugin_start(plugin_dir)
 
-def plugin_start():
+def plugin_start(plugin_dir):
     """
     Load Screenshot plugin into EDMC
     """
@@ -105,7 +116,7 @@ def plugin_start():
 
 
 # Settings dialog dismissed
-def prefs_changed():
+def prefs_changed(cmdr, is_beta):
     debug("prefs_changed");
     config.set("BMP", this.bmp_loc.get())
     config.set("PNG", this.png_loc.get())
@@ -125,14 +136,14 @@ def prefs_changed():
 def debug_settings():
     debug("debug_settings");
     if this.vdebug.get() == "1":
-        print "Source Directory " + this.bmp_loc.get()
-        print "Target Directory " + this.png_loc.get()
-        print "Delete Originals " + this.delete_org.get()
-        print "Make System Directory " + this.mkdir.get()
-        print "HideUI " + this.hideui.get()
-        print "Timer " + this.timer.get()
-        print "Scanshot " + this.scanshot.get()
-        print "Debug " + this.vdebug.get()
+        print(("Source Directory " + this.bmp_loc.get()))
+        print(("Target Directory " + this.png_loc.get()))
+        print(("Delete Originals " + this.delete_org.get()))
+        print(("Make System Directory " + this.mkdir.get()))
+        print(("HideUI " + this.hideui.get()))
+        print(("Timer " + this.timer.get()))
+        print(("Scanshot " + this.scanshot.get()))
+        print(("Debug " + this.vdebug.get()))
 
 
 def plugin_prefs(parent, cmdr, is_beta):
@@ -167,9 +178,15 @@ def plugin_prefs(parent, cmdr, is_beta):
 
     Masks = [
         "SYSTEM(BODY)_NNNNN.png",
+        "SYSTEM(BODY)_DATE.png",
         "SYSTEM(CMDR)_NNNNN.png",
+        "SYSTEM(CMDR)_DATE.png",
         "BODY(CMDR)_NNNNN.png",
-        "SYSTEM_(BODY)_CMDR_NNNNN.png"
+        "BODY(CMDR)_DATE.png",
+        "SYSTEM_(BODY)_CMDR_NNNNN.png",
+        "SYSTEM_(BODY)_CMDR_DATE.png",
+        "SYSTEM BODY (CMDR) NNNNN.png",
+        "SYSTEM BODY (CMDR) DATE.png"
     ]
 
     this.maskVar = tk.StringVar(frame)
@@ -275,7 +292,7 @@ def getFileMask(source, system, body, cmdr):
 
     mask = this.mask.get()
     if system and body:
-        bodyid = body.replace(system, '')
+        bodyid = body.replace(system, '').strip()
         mask = mask.replace('SYSTEM', system)
         mask = mask.replace('BODY', bodyid)
     elif system and not body:
@@ -286,6 +303,8 @@ def getFileMask(source, system, body, cmdr):
         mask = mask.replace('BODY', 'Unknown')
     mask = mask.replace('CMDR', cmdr)
     mask = mask.replace('NNNNN', sequencemask)
+    mask = mask.replace('DATE', datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))
+
     # mask=system+'('+body+')_'+sequencemask+'.png'
 
     # We want to distinguish high res could make this optional
@@ -352,7 +371,7 @@ def thumbnail(img, size, xy):
 
     temp.thumbnail(resize, Image.ANTIALIAS)
 
-    cbuf = StringIO.StringIO()
+    cbuf = io.BytesIO()
     temp.save(cbuf, format='GIF')
     return cbuf.getvalue()
 
@@ -382,7 +401,7 @@ def save_crop(event):
 
 
 # Detect journal events
-def journal_entry(cmdr, system, station, entry):
+def journal_entry(cmdr, is_beta, system, station, entry, state):
     # when the outomation is on we need to raise the key
     if this.timer.get() == "1" and this.gamemode == "Solo":
         key.ReleaseKey(VK_LEFTALT)
