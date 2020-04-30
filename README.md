@@ -29,7 +29,7 @@ Go to file/settings and put in:
 * Hide the user interface
 * Choose a file mask 
 * Instruct the timer to use High Res Screenshots (not recommended)
-* Enable Debugging (not recommended)
+* Enable Debugging (not recommended)  C:\Users\YOURUSERNAME\AppData\Local\Temp\EDMarketConnector.log
 
 # To Do
 * Add defensive code in case the directories do not exist or are otherwise invalid
