@@ -3,6 +3,7 @@ load.pyo
 *.pyo
 *.pyo
 *.pyo
+*.pyc
 PIL/BmpImagePlugin.pyo
 PIL/GifImagePlugin.pyo
 PIL/GimpGradientFile.pyo

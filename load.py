@@ -54,7 +54,7 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.version = "3.3.0"
+this.version = "3.4.0"
 this.version_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
 
 this.delete_queue = collections.deque()
