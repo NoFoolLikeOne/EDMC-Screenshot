@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+import key
+from sys import platform
+import myNotebook as nb
+from config import applongname, appversion
 import io
 
 import collections
@@ -12,14 +16,15 @@ import requests
 import sys
 
 import sys
-if sys.hexversion >= 0x3000000:
-    from PIL3 import Image
-    import tkinter as tk
-    import tkinter.ttk
+
+if sys.version_info >= (3, 9, 5):
+    from PIL39 import Image
 else:
-    from PIL2 import Image
-    import Tkinter as tk
-    import ttk
+    from PIL3 import Image
+
+
+import tkinter as tk
+import tkinter.ttk
 from config import config
 from ctypes.wintypes import *
 from ttkHyperlinkLabel import HyperlinkLabel
@@ -32,14 +37,6 @@ SYSTEMS_PANEL = 1
 SYSTEM_MAP = 7
 GALMAP = 6
 
-from config import applongname, appversion
-import myNotebook as nb
-from config import config
-
-import ctypes
-from ctypes.wintypes import *
-from sys import platform
-import key
 
 VK_F10 = 0x79
 VK_LEFTALT = 0xA4
@@ -87,37 +84,39 @@ def debug(d):
     if this.vdebug.get() == "1":
         print(('[Screenshot] ' + str(d)))
 
+
 def plugin_start3(plugin_dir):
     return plugin_start(plugin_dir)
+
 
 def plugin_start(plugin_dir):
     """
     Load Screenshot plugin into EDMC
     """
-    this.bmp_loc = tk.StringVar(value=config.get("BMP"))
-    this.png_loc = tk.StringVar(value=config.get("PNG"))
-    this.delete_org = tk.StringVar(value=config.get("DelOrg"))
-    this.mkdir = tk.StringVar(value=config.get("Mkdir"))
-    this.hideui = tk.StringVar(value=config.get("HideUI"))
-    this.timer = tk.StringVar(value=config.get("Timer"))
-    this.scanshot = tk.StringVar(value=config.get("Scanshot"))
-    this.vdebug = tk.StringVar(value=config.get("Debug"))
+    this.bmp_loc = tk.StringVar(value=config.get_str("BMP"))
+    this.png_loc = tk.StringVar(value=config.get_str("PNG"))
+    this.delete_org = tk.StringVar(value=config.get_str("DelOrg"))
+    this.mkdir = tk.StringVar(value=config.get_str("Mkdir"))
+    this.hideui = tk.StringVar(value=config.get_str("HideUI"))
+    this.timer = tk.StringVar(value=config.get_str("Timer"))
+    this.scanshot = tk.StringVar(value=config.get_str("Scanshot"))
+    this.vdebug = tk.StringVar(value=config.get_str("Debug"))
     this.gamemode = "None"
-    if config.get("Mask"):
-        this.mask = tk.StringVar(value=config.get("Mask"))
+    if config.get_str("Mask"):
+        this.mask = tk.StringVar(value=config.get_str("Mask"))
     else:
         this.mask = tk.StringVar(value="SYSTEM(BODY)_NNNNN.png")
 
-    debug("plugin_start" + this.mask.get());
+    debug("plugin_start" + this.mask.get())
     checkVersion()
 
-    debug("plugin_start");
+    debug("plugin_start")
     return "Screenshot"
 
 
 # Settings dialog dismissed
 def prefs_changed(cmdr, is_beta):
-    debug("prefs_changed");
+    debug("prefs_changed")
     config.set("BMP", this.bmp_loc.get())
     config.set("PNG", this.png_loc.get())
     config.set("DelOrg", this.delete_org.get())
@@ -134,7 +133,7 @@ def prefs_changed(cmdr, is_beta):
 
 
 def debug_settings():
-    debug("debug_settings");
+    debug("debug_settings")
     if this.vdebug.get() == "1":
         print(("Source Directory " + this.bmp_loc.get()))
         print(("Target Directory " + this.png_loc.get()))
@@ -147,7 +146,7 @@ def debug_settings():
 
 
 def plugin_prefs(parent, cmdr, is_beta):
-    debug("plugin_prefs");
+    debug("plugin_prefs")
     frame = nb.Frame(parent)
     frame.columnconfigure(3, weight=1)
 
@@ -200,7 +199,8 @@ def plugin_prefs(parent, cmdr, is_beta):
     maskVar.trace('w', change_mask)
     popupTypes.grid(row=6, column=1, columnspan=2, sticky=tk.W)
     popLabel.grid(padx=10, row=6, column=0, sticky=tk.W)
-    nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(padx=10, row=7, column=0, sticky=tk.EW)
+    nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(
+        padx=10, row=7, column=0, sticky=tk.EW)
 
     return frame
 
@@ -210,16 +210,17 @@ def change_mask(*args):
 
 
 def plugin_app(parent):
-    debug("plugin_app");
+    debug("plugin_app")
     this.parent = parent
     this.pcont = tk.Frame(parent)
     this.container = tk.Frame(pcont)
     this.container.columnconfigure(3, weight=1)
     this.label = tk.Label(this.container, text="Screenshot:")
-    this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
+    this.status = HyperlinkLabel(
+        this.container, anchor=tk.W, text=this.status_text)
     this.status["url"] = this.status_url
     this.timex = tk.Button(this.container, command=lambda: this.timex.config(text="False", image=this.io_LEDRedOff) if
-    this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image=this.io_LEDRedOn), anchor=tk.W)
+                           this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image=this.io_LEDRedOn), anchor=tk.W)
     this.io_LEDRedOn = tk.PhotoImage(
         file=os.path.realpath(os.path.dirname(os.path.realpath(__file__))) + "\\icons\\timer_enabled.gif")
     this.io_LEDRedOff = tk.PhotoImage(
@@ -303,7 +304,8 @@ def getFileMask(source, system, body, cmdr):
         mask = mask.replace('BODY', 'Unknown')
     mask = mask.replace('CMDR', cmdr)
     mask = mask.replace('NNNNN', sequencemask)
-    mask = mask.replace('DATE', datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))
+    mask = mask.replace(
+        'DATE', datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))
 
     # mask=system+'('+body+')_'+sequencemask+'.png'
 
@@ -390,13 +392,13 @@ def getGuiFocus():
 
 def save_screenshot(event):
     if this.crop_status:
-        this.im.save(this.converted, "PNG");
+        this.im.save(this.converted, "PNG")
         this.status['text'] = "Full Screen Saved"
 
 
 def save_crop(event):
     if this.crop_status:
-        this.crop.save(this.converted, "PNG");
+        this.crop.save(this.converted, "PNG")
         this.status['text'] = "Crop Saved"
 
 
@@ -449,7 +451,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
         # open the image and save it as PNG
         this.im = Image.open(original)
-        this.im.save(converted, "PNG");
+        this.im.save(converted, "PNG")
 
         # create a thumbnail
         this._IMG_THUMB = tk.PhotoImage(data=thumbnail(this.im, 75, "y"))
@@ -482,7 +484,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             crop = False
 
         if crop and not isHighRes(entry['Filename'][13:]):
-            this.crop_status = True;
+            this.crop_status = True
             debug("Cropping")
             this._IMG_CROP = tk.PhotoImage(data=thumbnail(this.crop, 75, "y"))
             this.cropped["image"] = this._IMG_CROP
@@ -496,7 +498,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             # set a timer to delete it in 30 seconds
             # this will let other plugins work with this one
             grace_period = 1000 * 60
-            debug("delete in {} seconds {}".format(grace_period / 1000, original))
+            debug("delete in {} seconds {}".format(
+                grace_period / 1000, original))
             this.delete_queue.append(original)
             this.parent.after(grace_period, delete_first)
 
