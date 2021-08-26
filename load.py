@@ -381,12 +381,13 @@ def thumbnail(img, size, xy):
 def getGuiFocus():
     status = "{}\status.json".format(config.default_journal_dir)
     debug(status)
-    with open(status) as json_file:
-        data = json.load(json_file)
     try:
+      with open(status) as json_file:
+        data = json.load(json_file)
         debug(data["GuiFocus"])
         return data["GuiFocus"]
-    except:
+    except Exception as e:
+        debug("Unable to get GuiFocus. {}".format(e))
         return
 
 
