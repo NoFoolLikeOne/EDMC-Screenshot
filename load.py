@@ -325,6 +325,9 @@ def getFilename(source, system, body, cmdr):
     mask = getFileMask(source, system, body, cmdr)
     debug("Output Mask: " + mask)
 
+    keepcharacters = (' ','.','_','+','-','(',')',',','#','\'','[',']')
+    mask = "".join(c for c in mask if c.isalnum() or c in keepcharacters).rstrip()
+
     files = glob.glob(dir + '/' + mask)
 
     # This is not very elegant. Is there a better way?
