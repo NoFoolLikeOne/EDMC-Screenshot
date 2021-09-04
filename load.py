@@ -185,7 +185,10 @@ def plugin_prefs(parent, cmdr, is_beta):
         "SYSTEM_(BODY)_CMDR_NNNNN.png",
         "SYSTEM_(BODY)_CMDR_DATE.png",
         "SYSTEM BODY (CMDR) NNNNN.png",
-        "SYSTEM BODY (CMDR) DATE.png"
+        "SYSTEM BODY (CMDR) DATE.png",
+        "DATE_SYSTEM_BODY.png",
+        "DATE_SYSTEM_CMDR.png",
+        "DATE_SYSTEM_BODY_CMDR.png"
     ]
 
     this.maskVar = tk.StringVar(frame)
