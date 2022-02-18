@@ -17,10 +17,13 @@ import sys
 
 import sys
 
-if sys.version_info >= (3, 9, 5):
-    from PIL39 import Image
+
+if sys.version_info >= (3, 10, 2):
+    from Libs.PIL310 import Image
+elif sys.version_info >= (3, 9, 5):
+    from Libs.PIL39 import Image
 else:
-    from PIL3 import Image
+    from Libs.PIL3 import Image
 
 
 import tkinter as tk
