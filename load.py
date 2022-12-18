@@ -17,8 +17,9 @@ import sys
 
 import sys
 
-
-if sys.version_info >= (3, 10, 2):
+if sys.version_info >= (3, 11, 1):
+    from Libs.PIL311 import Image
+elif sys.version_info >= (3, 10, 2):
     from Libs.PIL310 import Image
 elif sys.version_info >= (3, 9, 5):
     from Libs.PIL39 import Image
@@ -328,8 +329,10 @@ def getFilename(source, system, body, cmdr):
     mask = getFileMask(source, system, body, cmdr)
     debug("Output Mask: " + mask)
 
-    keepcharacters = (' ','.','_','+','-','(',')',',','#','\'','[',']')
-    mask = "".join(c for c in mask if c.isalnum() or c in keepcharacters).rstrip()
+    keepcharacters = (' ', '.', '_', '+', '-', '(', ')',
+                      ',', '#', '\'', '[', ']')
+    mask = "".join(c for c in mask if c.isalnum()
+                   or c in keepcharacters).rstrip()
 
     files = glob.glob(dir + '/' + mask)
 
@@ -391,10 +394,10 @@ def getGuiFocus():
     status = "{}\status.json".format(config.default_journal_dir)
     debug(status)
     try:
-      with open(status) as json_file:
-        data = json.load(json_file)
-        debug(data["GuiFocus"])
-        return data["GuiFocus"]
+        with open(status) as json_file:
+            data = json.load(json_file)
+            debug(data["GuiFocus"])
+            return data["GuiFocus"]
     except Exception as e:
         debug("Unable to get GuiFocus. {}".format(e))
         return
