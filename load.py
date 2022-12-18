@@ -411,6 +411,7 @@ def save_screenshot(event):
 
 def save_crop(event):
     if this.crop_status:
+        debug("saving crop?")
         this.crop.save(this.converted, "PNG")
         this.status['text'] = "Crop Saved"
 
@@ -487,7 +488,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             this.crop = this.im.crop((451, 270, 1460, 837))
         elif focus == SYSTEMS_PANEL:
             this.crop = this.im.crop((451, 270, 1460, 837))
-        if this.thargoid:
+        elif this.thargoid:
             this.thargoid = False
             width = int(entry.get("Width"))
             height = int(entry.get("Height"))
