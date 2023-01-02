@@ -17,14 +17,11 @@ import sys
 
 import sys
 
-if sys.version_info >= (3, 11, 1):
+## are we 64 bit?
+if sys.maxsize > 2**32:
+    from Libs.PIL31164 import Image
+else:    
     from Libs.PIL311 import Image
-elif sys.version_info >= (3, 10, 2):
-    from Libs.PIL310 import Image
-elif sys.version_info >= (3, 9, 5):
-    from Libs.PIL39 import Image
-else:
-    from Libs.PIL3 import Image
 
 
 import tkinter as tk
@@ -64,7 +61,7 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.version = "6.0.1"
+this.version = "6.4.0"
 this.version_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
 
 this.delete_queue = collections.deque()
