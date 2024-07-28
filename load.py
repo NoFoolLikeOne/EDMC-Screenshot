@@ -18,11 +18,7 @@ import sys
 import sys
 
 ## are we 64 bit?
-if sys.maxsize > 2**32:
-    from Libs.PIL31164 import Image
-else:    
-    from Libs.PIL311 import Image
-
+from PIL import Image
 
 import tkinter as tk
 import tkinter.ttk
@@ -61,7 +57,7 @@ this = sys.modules[__name__]
 this.s = None
 this.prep = {}
 
-this.version = "6.4.0"
+this.version = "7.0.0"
 this.version_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy9ij93j2qbwD-1_bXlI5IfO4EUD4ozNX2GJ2Do5tZNl-udWIqBHxYbtmcMRwvF6favzay3zY2LpH5/pub?gid=0&single=true&output=tsv"
 
 this.delete_queue = collections.deque()
@@ -73,7 +69,7 @@ def checkVersion():
     getnews = True
     for line in versions.content.decode("ascii").split("\r\n"):
         rec = line.split("\t")
-        if rec[0] == 'EDMC-Screenshot':
+        if rec[0] == "EDMC-Screenshot":
             this.status_url = rec[2]
             if rec[1] != this.version:
                 this.status_text = "Upgrade to version " + rec[1]
@@ -83,7 +79,7 @@ def checkVersion():
 
 def debug(d):
     if this.vdebug.get() == "1":
-        print(('[Screenshot] ' + str(d)))
+        print(("[Screenshot] " + str(d)))
 
 
 def plugin_start3(plugin_dir):
@@ -163,18 +159,21 @@ def plugin_prefs(parent, cmdr, is_beta):
     png_entry = nb.Entry(frame, textvariable=this.png_loc)
     png_entry.grid(padx=10, row=1, column=1, columnspan=2, sticky=tk.W)
 
-    nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(padx=10, row=2, column=0,
-                                                                                      sticky=tk.W)
-    nb.Checkbutton(frame, text="Group files by system directory", variable=this.mkdir).grid(padx=10, row=3, column=0,
-                                                                                            sticky=tk.W)
-    nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(padx=10, row=4, column=0,
-                                                                                     sticky=tk.W)
-    nb.Checkbutton(frame, text="Take high resolution shots on the timer", variable=this.timer).grid(padx=10, row=5,
-                                                                                                    column=0,
-                                                                                                    sticky=tk.W)
-    nb.Checkbutton(frame, text="Take screenshot when scanning a Thargoid", variable=this.scanshot).grid(padx=10, row=5,
-                                                                                                        column=0,
-                                                                                                        sticky=tk.W)
+    nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(
+        padx=10, row=2, column=0, sticky=tk.W
+    )
+    nb.Checkbutton(
+        frame, text="Group files by system directory", variable=this.mkdir
+    ).grid(padx=10, row=3, column=0, sticky=tk.W)
+    nb.Checkbutton(frame, text="Hide The User Interface", variable=this.hideui).grid(
+        padx=10, row=4, column=0, sticky=tk.W
+    )
+    nb.Checkbutton(
+        frame, text="Take high resolution shots on the timer", variable=this.timer
+    ).grid(padx=10, row=5, column=0, sticky=tk.W)
+    nb.Checkbutton(
+        frame, text="Take screenshot when scanning a Thargoid", variable=this.scanshot
+    ).grid(padx=10, row=5, column=0, sticky=tk.W)
 
     Masks = [
         "SYSTEM(BODY)_NNNNN.png",
@@ -189,7 +188,7 @@ def plugin_prefs(parent, cmdr, is_beta):
         "SYSTEM BODY (CMDR) DATE.png",
         "DATE_SYSTEM_BODY.png",
         "DATE_SYSTEM_CMDR.png",
-        "DATE_SYSTEM_BODY_CMDR.png"
+        "DATE_SYSTEM_BODY_CMDR.png",
     ]
 
     this.maskVar = tk.StringVar(frame)
@@ -200,11 +199,12 @@ def plugin_prefs(parent, cmdr, is_beta):
 
     popLabel = nb.Label(frame, text="File Mask")
     popupTypes = tk.OptionMenu(frame, this.maskVar, *Masks)
-    maskVar.trace('w', change_mask)
+    maskVar.trace("w", change_mask)
     popupTypes.grid(row=6, column=1, columnspan=2, sticky=tk.W)
     popLabel.grid(padx=10, row=6, column=0, sticky=tk.W)
     nb.Checkbutton(frame, text="Enable Debugging", variable=this.vdebug).grid(
-        padx=10, row=7, column=0, sticky=tk.EW)
+        padx=10, row=7, column=0, sticky=tk.EW
+    )
 
     return frame
 
@@ -220,15 +220,25 @@ def plugin_app(parent):
     this.container = tk.Frame(pcont)
     this.container.columnconfigure(3, weight=1)
     this.label = tk.Label(this.container, text="Screenshot:")
-    this.status = HyperlinkLabel(
-        this.container, anchor=tk.W, text=this.status_text)
+    this.status = HyperlinkLabel(this.container, anchor=tk.W, text=this.status_text)
     this.status["url"] = this.status_url
-    this.timex = tk.Button(this.container, command=lambda: this.timex.config(text="False", image=this.io_LEDRedOff) if
-                           this.timex.config('text')[-1] == 'True' else this.timex.config(text="True", image=this.io_LEDRedOn), anchor=tk.W)
+    this.timex = tk.Button(
+        this.container,
+        command=lambda: (
+            this.timex.config(text="False", image=this.io_LEDRedOff)
+            if this.timex.config("text")[-1] == "True"
+            else this.timex.config(text="True", image=this.io_LEDRedOn)
+        ),
+        anchor=tk.W,
+    )
     this.io_LEDRedOn = tk.PhotoImage(
-        file=os.path.realpath(os.path.dirname(os.path.realpath(__file__))) + "\\icons\\timer_enabled.gif")
+        file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))
+        + "\\icons\\timer_enabled.gif"
+    )
     this.io_LEDRedOff = tk.PhotoImage(
-        file=os.path.realpath(os.path.dirname(os.path.realpath(__file__))) + "\\icons\\timer_disabled.gif")
+        file=os.path.realpath(os.path.dirname(os.path.realpath(__file__)))
+        + "\\icons\\timer_disabled.gif"
+    )
     this.timex.config(text="False", image=io_LEDRedOff)
     this.timex.grid(padx=10, row=0, column=2, sticky=tk.E)
     this.thargoid = False
@@ -253,7 +263,7 @@ def plugin_app(parent):
     this.processing = False
     this.parent.after(1000, sendKeyPress)
 
-    return (this.pcont)
+    return this.pcont
 
 
 def display():
@@ -276,8 +286,8 @@ def getOutputDir(system):
     debug("eh" + this.png_loc.get())
 
     if this.mkdir.get() == "1" and system:
-        make_sure_path_exists(this.png_loc.get() + '/' + system)
-        return this.png_loc.get() + '/' + system
+        make_sure_path_exists(this.png_loc.get() + "/" + system)
+        return this.png_loc.get() + "/" + system
     else:
         return this.png_loc.get()
 
@@ -297,25 +307,24 @@ def getFileMask(source, system, body, cmdr):
 
     mask = this.mask.get()
     if system and body:
-        bodyid = body.replace(system, '').strip()
-        mask = mask.replace('SYSTEM', system)
-        mask = mask.replace('BODY', bodyid)
+        bodyid = body.replace(system, "").strip()
+        mask = mask.replace("SYSTEM", system)
+        mask = mask.replace("BODY", bodyid)
     elif system and not body:
-        mask = mask.replace('SYSTEM', system)
-        mask = mask.replace('BODY', 'Unknown')
+        mask = mask.replace("SYSTEM", system)
+        mask = mask.replace("BODY", "Unknown")
     else:
-        mask = mask.replace('SYSTEM', 'Unknown')
-        mask = mask.replace('BODY', 'Unknown')
-    mask = mask.replace('CMDR', cmdr)
-    mask = mask.replace('NNNNN', sequencemask)
-    mask = mask.replace(
-        'DATE', datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))
+        mask = mask.replace("SYSTEM", "Unknown")
+        mask = mask.replace("BODY", "Unknown")
+    mask = mask.replace("CMDR", cmdr)
+    mask = mask.replace("NNNNN", sequencemask)
+    mask = mask.replace("DATE", datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S"))
 
     # mask=system+'('+body+')_'+sequencemask+'.png'
 
     # We want to distinguish high res could make this optional
     if isHighRes(source):
-        mask = 'HighRes_' + mask
+        mask = "HighRes_" + mask
 
     return mask
 
@@ -326,12 +335,10 @@ def getFilename(source, system, body, cmdr):
     mask = getFileMask(source, system, body, cmdr)
     debug("Output Mask: " + mask)
 
-    keepcharacters = (' ', '.', '_', '+', '-', '(', ')',
-                      ',', '#', '\'', '[', ']')
-    mask = "".join(c for c in mask if c.isalnum()
-                   or c in keepcharacters).rstrip()
+    keepcharacters = (" ", ".", "_", "+", "-", "(", ")", ",", "#", "'", "[", "]")
+    mask = "".join(c for c in mask if c.isalnum() or c in keepcharacters).rstrip()
 
-    files = glob.glob(dir + '/' + mask)
+    files = glob.glob(dir + "/" + mask)
 
     # This is not very elegant. Is there a better way?
     # counting won't work if there ar gaps in the sequence because of deletions
@@ -348,7 +355,7 @@ def getFilename(source, system, body, cmdr):
     sequencemask = "[0123456789][0123456789][0123456789][0123456789][0123456789]"
     sequence = format(int(max(n)) + 1, "05d")
 
-    fname = dir + '/' + mask.replace(sequencemask, sequence)
+    fname = dir + "/" + mask.replace(sequencemask, sequence)
     debug("getFileMask: " + fname)
 
     return fname
@@ -380,10 +387,10 @@ def thumbnail(img, size, xy):
 
     resize = newwidth, newheight
 
-    temp.thumbnail(resize, Image.ANTIALIAS)
+    temp.thumbnail(resize, Image.Resampling.LANCZOS)
 
     cbuf = io.BytesIO()
-    temp.save(cbuf, format='GIF')
+    temp.save(cbuf, format="GIF")
     return cbuf.getvalue()
 
 
@@ -403,14 +410,14 @@ def getGuiFocus():
 def save_screenshot(event):
     if this.crop_status:
         this.im.save(this.converted, "PNG")
-        this.status['text'] = "Full Screen Saved"
+        this.status["text"] = "Full Screen Saved"
 
 
 def save_crop(event):
     if this.crop_status:
         debug("saving crop?")
         this.crop.save(this.converted, "PNG")
-        this.status['text'] = "Crop Saved"
+        this.status["text"] = "Crop Saved"
 
 
 # Detect journal events
@@ -423,18 +430,21 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     display()
 
     # If we have just scanned a Thargoid force a screenshot and set the Thargoid flag
-    if entry.get("event") == "MaterialCollected" and entry.get("Name") in ("tg_shipflightdata", "unknownshipsignature"):
+    if entry.get("event") == "MaterialCollected" and entry.get("Name") in (
+        "tg_shipflightdata",
+        "unknownshipsignature",
+    ):
         if this.scanshot.get() == "1":
             key.PressKey(VK_F10)
 
         this.thargscan = True
 
-    if entry['event'] == 'LoadGame':
+    if entry["event"] == "LoadGame":
         this.gamemode = entry["GameMode"]
 
-    if entry['event'] == 'ShutDown' or entry['event'] == 'Died':
+    if entry["event"] == "ShutDown" or entry["event"] == "Died":
         this.timex.config(text="False", image=this.io_LEDRedOff)
-        this.status['text'] = 'Timer Stopped'
+        this.status["text"] = "Timer Stopped"
         debug("stopping Timer")
 
     # { "timestamp":"2019-04-28T07:18:00Z", "event":"Music", "MusicTrack":"Unknown_Encounter" }
@@ -444,20 +454,20 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         else:
             this.thargoid = False
 
-    if entry['event'] == 'Screenshot':
+    if entry["event"] == "Screenshot":
 
         if "Body" in entry:
-            body = entry['Body']
+            body = entry["Body"]
         else:
             body = station
 
         this.processing = True
         # we can set status to error because it wont be shown unless we fail
-        this.status['text'] = 'error'
+        this.status["text"] = "error"
         focus = getGuiFocus()
 
-        original = getBmpPath(entry['Filename'])
-        converted = getFilename(entry['Filename'][13:], system, body, cmdr)
+        original = getBmpPath(entry["Filename"])
+        converted = getFilename(entry["Filename"][13:], system, body, cmdr)
         this.converted = converted
 
         # open the image and save it as PNG
@@ -494,7 +504,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         else:
             crop = False
 
-        if crop and not isHighRes(entry['Filename'][13:]):
+        if crop and not isHighRes(entry["Filename"][13:]):
             this.crop_status = True
             debug("Cropping")
             this._IMG_CROP = tk.PhotoImage(data=thumbnail(this.crop, 75, "y"))
@@ -509,17 +519,30 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             # set a timer to delete it in 30 seconds
             # this will let other plugins work with this one
             grace_period = 1000 * 60
-            debug("delete in {} seconds {}".format(
-                grace_period / 1000, original))
+            debug("delete in {} seconds {}".format(grace_period / 1000, original))
             this.delete_queue.append(original)
             this.parent.after(grace_period, delete_first)
 
         this.processing = False
         if len(os.path.basename(converted)) > 30:
-            this.status['text'] = os.path.basename(converted)[0:30] + "..."
+            this.status["text"] = os.path.basename(converted)[0:30] + "..."
         else:
-            this.status['text'] = os.path.basename(converted)
-        this.status["url"] = None
+            this.status["text"] = os.path.basename(converted)
+        this.status["url"] = os.path.dirname(converted)
+
+
+def open_directory(event):
+    # Open the directory containing the file in the default file manager
+    directory = os.path.dirname(this.status["url"])
+    if os.name == "nt":  # For Windows
+        os.startfile(directory)
+    elif os.name == "posix":
+        try:
+            subprocess.call(["open", directory])  # For macOS
+        except FileNotFoundError:
+            subprocess.call(["xdg-open", directory])  # For Linux
+    else:
+        print("Unsupported OS")
 
 
 def delete_first():
@@ -533,19 +556,23 @@ def sendKeyPress():
         running = True
 
     if this.processing:
-        this.status['text'] = "Processing Screenshot"
+        this.status["text"] = "Processing Screenshot"
 
-    if EliteInForeground() and this.timex['text'] == "True" and this.processing == False:
+    if (
+        EliteInForeground()
+        and this.timex["text"] == "True"
+        and this.processing == False
+    ):
         if this.timer.get() == "1":
             if this.gamemode == "Solo":
                 key.PressKey(VK_LEFTALT)
             key.PressKey(VK_F10)
         else:
             key.PressKey(VK_F10)
-    elif EliteInForeground() == False and this.timex['text'] == "True":
-        this.status['text'] = "Automation Suspended"
-    elif this.processing == True and this.timex['text'] == "True":
-        this.status['text'] = "Processing"
+    elif EliteInForeground() == False and this.timex["text"] == "True":
+        this.status["text"] = "Automation Suspended"
+    elif this.processing == True and this.timex["text"] == "True":
+        this.status["text"] = "Processing"
 
     this.parent.after(1000, sendKeyPress)
 
@@ -557,11 +584,11 @@ def GetWindowName(h):
 
 
 def game_running():
-    if platform == 'darwin':
+    if platform == "darwin":
         for app in NSWorkspace.sharedWorkspace().runningApplications():
-            if app.bundleIdentifier() == 'uk.co.frontier.EliteDangerous':
+            if app.bundleIdentifier() == "uk.co.frontier.EliteDangerous":
                 return True
-    elif platform == 'win32':
+    elif platform == "win32":
 
         def WindowTitle(h):
             if h:
@@ -573,9 +600,11 @@ def game_running():
 
         def callback(hWnd, lParam):
             name = WindowTitle(hWnd)
-            if name and name.startswith('Elite - Dangerous'):
+            if name and name.startswith("Elite - Dangerous"):
                 handle = GetProcessHandleFromHwnd(hWnd)
-                if handle:  # If GetProcessHandleFromHwnd succeeds then the app is already running as this user
+                if (
+                    handle
+                ):  # If GetProcessHandleFromHwnd succeeds then the app is already running as this user
                     CloseHandle(handle)
                     this.game = hWnd
                     return False  # stop enumeration
@@ -589,6 +618,6 @@ def game_running():
 def EliteInForeground():
     active = GetForegroundWindow()
     name = GetWindowName(active)
-    if name and name.startswith('Elite - Dangerous'):
+    if name and name.startswith("Elite - Dangerous"):
         return True
     return False
