@@ -141,6 +141,11 @@ def debug_settings():
         print(("Scanshot " + this.scanshot.get()))
         print(("Debug " + this.vdebug.get()))
 
+def select_directory(var):
+    """Opens a dialog to select a directory and updates the variable."""
+    directory = tk.filedialog.askdirectory(initialdir=var.get())
+    if directory:
+        var.set(directory)
 
 def plugin_prefs(parent, cmdr, is_beta):
     debug("plugin_prefs")
@@ -150,14 +155,20 @@ def plugin_prefs(parent, cmdr, is_beta):
     bmp_label = nb.Label(frame, text="Screenshot Directory")
     bmp_label.grid(padx=10, row=0, column=0, sticky=tk.W)
 
-    bmp_entry = nb.EntryMenu(frame, textvariable=this.bmp_loc)
-    bmp_entry.grid(padx=10, row=0, column=1, columnspan=2, sticky=tk.W)
+    bmp_path_label = nb.Label(frame, textvariable=this.bmp_loc)
+    bmp_path_label.grid(padx=10, row=0, column=1, columnspan=2, sticky=tk.W)
+
+    bmp_button = tkinter.ttk.Button(frame, text="Browse...", command=lambda: select_directory(this.bmp_loc))
+    bmp_button.grid(row=0, column=3, padx=10, sticky=tk.W)
 
     png_label = nb.Label(frame, text="Conversion Directory")
     png_label.grid(padx=10, row=1, column=0, sticky=tk.W)
 
-    png_entry = nb.EntryMenu(frame, textvariable=this.png_loc)
-    png_entry.grid(padx=10, row=1, column=1, columnspan=2, sticky=tk.W)
+    png_path_label = nb.Label(frame, textvariable=this.png_loc)
+    png_path_label.grid(padx=10, row=1, column=1, columnspan=2, sticky=tk.W)
+
+    png_button = tkinter.ttk.Button(frame, text="Browse...", command=lambda: select_directory(this.png_loc))
+    png_button.grid(row=1, column=3, padx=10, sticky=tk.W)
 
     nb.Checkbutton(frame, text="Delete Original File", variable=this.delete_org).grid(
         padx=10, row=2, column=0, sticky=tk.W
